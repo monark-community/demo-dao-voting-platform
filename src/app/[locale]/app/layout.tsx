@@ -17,7 +17,6 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
         terms: dict.terms,
         seed: dict.seed,
         disclaimer: dict.common.disclaimer,
-        demoBadge: dict.common.demoBadge,
       }}
     >
       <AppFrame>{children}</AppFrame>

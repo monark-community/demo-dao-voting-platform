@@ -3,7 +3,6 @@
 import { CheckIcon, InfoIcon, SparklesIcon } from "lucide-react"
 import Link from "next/link"
 import { useId, useState, type ReactNode } from "react"
-import { toast } from "sonner"
 
 import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
@@ -14,7 +13,7 @@ import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
 import { castVote } from "@/lib/demo/ops"
-import { getDemo, useDemo } from "@/lib/demo/store"
+import { useDemo } from "@/lib/demo/store"
 import { canVoteDirectly, tally, type ProposalStatus, votingPower } from "@/lib/demo/tally"
 import type { Choice, Proposal } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
@@ -63,7 +62,6 @@ export function VotePanel({
   const pivotal = !mine && weight > 0 && with_("for") !== with_("against")
 
   const submit = async (c: Choice) => {
-    const before = tally(p, demo.members).quorumReached
     onPending({ choice: c, weight })
     const ok = await tx.run(
       {
@@ -77,11 +75,8 @@ export function VotePanel({
       },
       (hash) => {
         onPending(null)
+        // No toast: the panel turns into "You voted …" and the tally moves.
         castVote(p.id, c, reason.slice(0, MAX_REASON), hash)
-        toast.success(t(app.toasts.voted, { choice: terms.choices[c].toLowerCase() }))
-        const s = getDemo()
-        const updated = s?.proposals.find((x) => x.id === p.id)
-        if (s && updated && !before && tally(updated, s.members).quorumReached) toast.success(t(app.toasts.quorum, { title: p.title }))
       }
     )
     if (!ok) onPending(null)

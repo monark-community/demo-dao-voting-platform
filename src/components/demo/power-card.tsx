@@ -3,6 +3,7 @@
 import { ArrowRightIcon, ShieldCheckIcon } from "lucide-react"
 import Link from "next/link"
 
+import { InfoTip } from "@/components/ui/info-tip"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useDemo } from "@/lib/demo/store"
@@ -52,13 +53,15 @@ export function PowerCard() {
         ) : null}
         <div className="flex items-center justify-between gap-3 px-3 py-2">
           <dt className="text-muted-foreground">{p.role}</dt>
-          <dd className="inline-flex items-center gap-1.5 font-bold">
+          <dd className="-my-1 inline-flex items-center gap-1 font-bold">
             <ShieldCheckIcon className="size-4 text-primary" aria-hidden="true" />
             {terms.roles[me.role]}
+            <InfoTip label={p.roleTip} className="-mr-2">
+              {p.roleHint[me.role]}
+            </InfoTip>
           </dd>
         </div>
       </dl>
-      <p className="text-xs text-muted-foreground">{p.roleHint[me.role]}</p>
       <Link
         href={href(locale, "/app/delegates")}
         className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-primary-ink underline underline-offset-4"

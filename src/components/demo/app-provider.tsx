@@ -17,7 +17,6 @@ export interface AppCopy {
   terms: Dictionary["terms"]
   seed: Dictionary["seed"]
   disclaimer: string
-  demoBadge: string
 }
 
 const AppContext = createContext<AppCopy | null>(null)
@@ -53,13 +52,11 @@ export function AppProvider({ value, children }: { value: AppCopy; children: Rea
       <WalletPrompt />
       <Toaster
         theme={resolvedTheme === "dark" ? "dark" : "light"}
-        // Desktop: top-right, below the header, the network strip and the
-        // section tabs (~190px), where pages keep their right edge clear
-        // (titles are left-aligned and the vote panel starts lower), so a
-        // toast never covers the tally or panel it reports on. Phones: full
-        // width over the network strip, which carries no reported content.
+        // Only "Demo reset" (and the wallet's "Address copied") still toast:
+        // every transaction is confirmed in place. Desktop: top-right, just
+        // below the header and the app bar. Phones: full width over the app bar.
         position="top-right"
-        offset={{ top: 196, right: 24 }}
+        offset={{ top: 136, right: 24 }}
         mobileOffset={{ top: 72, left: 16, right: 16 }}
         toastOptions={{
           classNames: {

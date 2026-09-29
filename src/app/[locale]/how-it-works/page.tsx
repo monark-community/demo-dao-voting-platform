@@ -1,4 +1,4 @@
-import { ArrowRightIcon, CheckIcon, FileSignatureIcon, LinkIcon, MinusIcon } from "lucide-react"
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon, FileSignatureIcon, LinkIcon, MinusIcon } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 import type { ReactNode } from "react"
@@ -55,12 +55,11 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
   return (
     <div className="flex flex-col">
       <header className="mx-auto w-full max-w-4xl px-4 pt-12 pb-10 sm:px-6 lg:pt-16">
-        <p className="eyebrow text-primary-ink">{h.eyebrow}</p>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-display sm:text-5xl">{h.title}</h1>
-        <p className="mt-5 max-w-[68ch] text-lg text-muted-foreground">{h.intro}</p>
+        <h1 className="text-4xl font-extrabold tracking-display sm:text-5xl">{h.title}</h1>
+        <p className="mt-4 max-w-[68ch] text-lg text-muted-foreground">{h.intro}</p>
       </header>
 
-      <Section id="lifecycle" title={h.lifecycle.title} body={h.lifecycle.body}>
+      <Section id="lifecycle" title={h.lifecycle.title}>
         <Lifecycle steps={h.lifecycle.states} className="mt-8" />
         <p className="mt-8 rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">{h.lifecycle.cancelled}</p>
       </Section>
@@ -104,7 +103,6 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
                   <tr key={m} className="border-b align-top last:border-0">
                     <th scope="row" className="px-5 py-4 font-bold">
                       {dict.terms.models[m]}
-                      <p className="mt-1 max-w-[28ch] text-xs font-normal text-muted-foreground">{h.models.notes[m]}</p>
                     </th>
                     <td className="px-5 py-4 tabular-nums">
                       {fmtNumber(locale, tl.for)} {unit}
@@ -181,7 +179,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         </div>
       </Section>
 
-      <Section id="records" title={h.records.title} body={h.records.body}>
+      <Section id="records" title={h.records.title}>
         <ul className="mt-8 grid gap-4 md:grid-cols-2">
           {h.records.items.map((item, i) => {
             const Icon = i === 0 ? LinkIcon : FileSignatureIcon
@@ -197,17 +195,23 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
       </Section>
 
       <Section id="developers" title={h.dev.title} body={h.dev.body}>
-        <figure className="mt-8 overflow-hidden rounded-3xl border bg-card">
-          <figcaption className="border-b px-5 py-3 text-xs font-semibold text-muted-foreground">{h.dev.codeLabel}</figcaption>
-          <ul className="divide-y">
-            {h.dev.mapping.map((m) => (
-              <li key={m.call} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                <code className="font-mono text-xs break-all sm:text-sm">{m.call}</code>
-                <code className="shrink-0 font-mono text-xs text-primary-ink">{m.demo}</code>
-              </li>
-            ))}
-          </ul>
-        </figure>
+        <details className="group mt-6 overflow-hidden rounded-3xl border bg-card">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 text-sm font-bold [&::-webkit-details-marker]:hidden">
+            {h.dev.show}
+            <ChevronDownIcon className="size-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <figure className="border-t">
+            <figcaption className="border-b px-5 py-3 text-xs font-semibold text-muted-foreground">{h.dev.codeLabel}</figcaption>
+            <ul className="divide-y">
+              {h.dev.mapping.map((m) => (
+                <li key={m.call} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                  <code className="font-mono text-xs break-all sm:text-sm">{m.call}</code>
+                  <code className="shrink-0 font-mono text-xs text-primary-ink">{m.demo}</code>
+                </li>
+              ))}
+            </ul>
+          </figure>
+        </details>
         <a href={REPO_URL} className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-primary-ink underline underline-offset-4">
           {h.dev.repo}
           <ArrowRightIcon className="size-4" aria-hidden="true" />
@@ -217,7 +221,6 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
       <section className="border-t bg-card">
         <div className="mx-auto flex max-w-4xl flex-col items-start gap-4 px-4 py-14 sm:px-6">
           <h2 className="text-3xl font-extrabold tracking-display">{h.closing.title}</h2>
-          <p className="text-muted-foreground">{h.closing.body}</p>
           <Button asChild size="lg" className="h-12 px-6 text-base">
             <Link href={href(locale, "/app")}>
               {h.closing.cta}
@@ -230,13 +233,13 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
   )
 }
 
-function Section({ id, title, body, children }: { id: string; title: string; body: string; children: ReactNode }) {
+function Section({ id, title, body, children }: { id: string; title: string; body?: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:py-12">
       <h2 id={`${id}-title`} className="text-2xl font-bold tracking-display sm:text-3xl">
         {title}
       </h2>
-      <p className="mt-3 max-w-[68ch] text-muted-foreground">{body}</p>
+      {body ? <p className="mt-3 max-w-[68ch] text-muted-foreground">{body}</p> : null}
       {children}
     </section>
   )

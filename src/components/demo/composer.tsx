@@ -4,10 +4,10 @@ import { BanknoteIcon, LockIcon, MegaphoneIcon, SlidersHorizontalIcon } from "lu
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, type ReactNode } from "react"
-import { toast } from "sonner"
 
 import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
+import { InfoTip } from "@/components/ui/info-tip"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { Card } from "./bits"
-import { Disclaimer } from "./disclaimer"
 import { TxFeedback } from "./tx-feedback"
 
 type ActionKind = ProposalAction["kind"]
@@ -133,7 +132,7 @@ export function Composer() {
   const demo = useDemo()
   const router = useRouter()
   const copy = useAppCopy()
-  const { app, terms, locale, disclaimer } = copy
+  const { app, terms, locale } = copy
   const c = app.composer
   const f = c.fields
   const tx = useTx()
@@ -168,7 +167,6 @@ export function Composer() {
         </span>
         <h1 className="mt-6 text-3xl font-extrabold tracking-display">{c.locked.title}</h1>
         <p className="mt-3 text-muted-foreground">{c.locked.body}</p>
-        <p className="mt-2 text-sm text-muted-foreground">{c.locked.hint}</p>
         <Button asChild size="lg" variant="outline" className="mt-8">
           <Link href={href(locale, "/app")}>{c.locked.back}</Link>
         </Button>
@@ -252,8 +250,8 @@ export function Composer() {
         movesValue: false,
       },
       (hash) => {
+        // No toast: the new proposal's page opens with voting live.
         const id = createProposal(draft, hash)
-        toast.success(app.toasts.published)
         router.push(href(locale, `/app/proposals/${id}`))
       }
     )
@@ -265,10 +263,7 @@ export function Composer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{c.title}</h1>
-        <p className="mt-2 max-w-[68ch] text-muted-foreground">{c.intro}</p>
-      </div>
+      <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{c.title}</h1>
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-1 text-sm font-bold">{c.templates.title}</span>
@@ -322,8 +317,8 @@ export function Composer() {
           <fieldset disabled={tx.busy} className="contents">
             <Card className="flex flex-col gap-5">
               <h2 className="text-lg font-bold">{c.sections.about}</h2>
-              <Field id="title" label={f.title} hint={f.titleHint} error={errors.title}>
-                <Input id="title" value={form.title} maxLength={90} onChange={(e) => set("title", e.target.value)} aria-invalid={!!errors.title} />
+              <Field id="title" label={f.title} error={errors.title}>
+                <Input id="title" placeholder={f.titleHint} value={form.title} maxLength={90} onChange={(e) => set("title", e.target.value)} aria-invalid={!!errors.title} />
               </Field>
               <Field id="summary" label={f.summary} error={errors.summary}>
                 <Input id="summary" value={form.summary} maxLength={140} onChange={(e) => set("summary", e.target.value)} aria-invalid={!!errors.summary} />
@@ -337,23 +332,38 @@ export function Composer() {
                   ))}
                 </select>
               </Field>
-              <Field id="body" label={f.body} hint={f.bodyHint} error={errors.body}>
-                <Textarea id="body" rows={6} value={form.body} onChange={(e) => set("body", e.target.value)} aria-invalid={!!errors.body} />
+              <Field id="body" label={f.body} error={errors.body}>
+                <Textarea id="body" rows={6} placeholder={f.bodyHint} value={form.body} onChange={(e) => set("body", e.target.value)} aria-invalid={!!errors.body} />
               </Field>
             </Card>
 
             <Card className="flex flex-col gap-5">
-              <h2 className="text-lg font-bold" id="action-legend">
-                {c.sections.action}
-              </h2>
+              <div className="flex items-center gap-1">
+                <h2 className="text-lg font-bold" id="action-legend">
+                  {c.sections.action}
+                </h2>
+                <InfoTip label={c.sections.actionTip}>
+                  <ul className="flex flex-col gap-1.5">
+                    <li>
+                      <strong>{f.actionNone}:</strong> {f.actionNoneHint}
+                    </li>
+                    <li>
+                      <strong>{f.actionTransfer}:</strong> {f.actionTransferHint}
+                    </li>
+                    <li>
+                      <strong>{f.actionRule}:</strong> {f.actionRuleHint}
+                    </li>
+                  </ul>
+                </InfoTip>
+              </div>
               <div role="radiogroup" aria-labelledby="action-legend" className="grid gap-2 sm:grid-cols-3">
                 {(
                   [
-                    ["none", f.actionNone, f.actionNoneHint, MegaphoneIcon],
-                    ["transfer", f.actionTransfer, f.actionTransferHint, BanknoteIcon],
-                    ["rule", f.actionRule, f.actionRuleHint, SlidersHorizontalIcon],
+                    ["none", f.actionNone, MegaphoneIcon],
+                    ["transfer", f.actionTransfer, BanknoteIcon],
+                    ["rule", f.actionRule, SlidersHorizontalIcon],
                   ] as const
-                ).map(([kind, label, hint, Icon]) => (
+                ).map(([kind, label, Icon]) => (
                   <label
                     key={kind}
                     className={cn(
@@ -366,7 +376,6 @@ export function Composer() {
                       <Icon className="size-4 text-primary-ink" aria-hidden="true" />
                       {label}
                     </span>
-                    <span className="text-xs text-muted-foreground">{hint}</span>
                   </label>
                 ))}
               </div>
@@ -397,7 +406,6 @@ export function Composer() {
                       className="font-mono"
                     />
                   </Field>
-                  <Disclaimer text={disclaimer} className="sm:col-span-2" />
                 </div>
               ) : null}
 
@@ -494,6 +502,7 @@ export function Composer() {
             <Button size="lg" onClick={submit} disabled={tx.busy}>
               {tx.busy ? c.pending : c.submit}
             </Button>
+            <p className="text-xs text-muted-foreground">{c.final}</p>
             <TxFeedback state={tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} />
           </div>
         </aside>

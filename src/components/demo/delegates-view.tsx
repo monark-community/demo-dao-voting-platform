@@ -2,9 +2,9 @@
 
 import { CheckIcon, UndoIcon, UserRoundIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { InfoTip } from "@/components/ui/info-tip"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
 import { DELEGATE_KEYS, addressOf } from "@/lib/demo/seed"
@@ -77,18 +77,18 @@ export function DelegatesView() {
             movesValue: false,
           }
         : { title: app.summaries.undelegate, rows: [{ label: app.summaries.delegateRows.amount, value: `${n(me.balance)} tGOV` }], movesValue: false },
-      (hash) => {
-        setDelegate(to?.address ?? null, hash)
-        toast.success(to ? t(app.toasts.delegated, { name: to.name }) : app.toasts.undelegated)
-      }
+      // No toast: the power diagram and the "Delegated to …" line confirm it.
+      (hash) => setDelegate(to?.address ?? null, hash)
     )
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{d.title}</h1>
-        <p className="mt-2 max-w-[68ch] text-muted-foreground">{d.intro}</p>
+        <div className="flex items-center gap-1">
+          <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{d.title}</h1>
+          <InfoTip label={d.tip}>{d.intro}</InfoTip>
+        </div>
       </div>
 
       <Card aria-labelledby="your-power" className="flex flex-col gap-5">
@@ -106,7 +106,6 @@ export function DelegatesView() {
           ) : null}
         </div>
         <TxFeedback state={tx.state} pendingLabel={d.pending} confirmedLabel={target ? d.done : d.doneBack} onRetry={() => run(delegates.find((x) => x.address === target) ?? null)} onDismiss={tx.reset} />
-        <p className="text-xs text-muted-foreground">{d.appliesNote}</p>
       </Card>
 
       <ul className="grid gap-4 md:grid-cols-2">

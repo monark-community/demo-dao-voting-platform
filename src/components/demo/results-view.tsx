@@ -49,7 +49,6 @@ export function ResultsView() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{r.title}</h1>
-        <p className="mt-2 max-w-[68ch] text-muted-foreground">{r.intro}</p>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -65,7 +64,6 @@ export function ResultsView() {
         <h2 id="chart-title" className="text-lg font-bold">
           {r.chartTitle}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">{r.chartBody}</p>
         <ul className="mt-5 flex flex-col gap-4" aria-label={r.chartLabel}>
           {rows.map(({ p, turnout, status }) => {
             const q = p.quorumPct / 100
@@ -144,7 +142,12 @@ export function ResultsView() {
             {r.historyTitle}
           </h2>
           {mine.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">{r.historyEmpty}</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {r.historyEmpty}{" "}
+              <Link href={href(locale, "/app")} className="font-bold text-primary-ink underline underline-offset-4">
+                {app.nav.proposals}
+              </Link>
+            </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[34rem] text-left text-sm">

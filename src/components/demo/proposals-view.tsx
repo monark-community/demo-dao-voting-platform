@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRightIcon, SearchIcon, XIcon, ZapIcon } from "lucide-react"
+import { ArrowRightIcon, PlusIcon, SearchIcon, XIcon, ZapIcon } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
@@ -77,9 +77,18 @@ export function ProposalsView() {
 
         <section aria-labelledby="list-title" className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h2 id="list-title" className="text-2xl font-bold">
-              {l.title}
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="list-title" className="text-2xl font-bold">
+                {l.title}
+              </h2>
+              {/* On phones "New proposal" lives here, so the app bar's three sections fit. */}
+              <Button asChild size="sm" className="h-10 sm:hidden">
+                <Link href={href(locale, "/app/new")}>
+                  <PlusIcon aria-hidden="true" />
+                  {app.nav.newProposal}
+                </Link>
+              </Button>
+            </div>
             <div className="relative sm:w-72">
               <label htmlFor="search" className="sr-only">
                 {l.search}
@@ -164,8 +173,7 @@ function SpaceHeader({ demo, now }: { demo: DemoState; now: number }) {
   return (
     <Card className="flex flex-col gap-5">
       <div>
-        <p className="eyebrow text-primary-ink">{s.eyebrow}</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-display sm:text-4xl">{demo.space.name}</h1>
+        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{demo.space.name}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {t(s.members, { n: demo.members.length })} · {t(s.rules, { quorum: demo.space.defaultQuorumPct, days: demo.space.defaultPeriodDays })}
         </p>
@@ -209,7 +217,6 @@ function ProposalRow({ proposal: p, demo, now }: { proposal: Proposal; demo: Dem
           {p.title}
         </Link>
       </h3>
-      <p className="mt-1 text-sm text-muted-foreground">{p.summary}</p>
 
       {status === "active" ? (
         <div className="mt-4">

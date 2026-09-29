@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 
 /** The life of a proposal as a connected strip of steps: flat orange line art, horizontal on wide screens. */
-export function Lifecycle({ steps, className }: { steps: { title: string; body: string }[]; className?: string }) {
+export function Lifecycle({ steps, className }: { steps: { title: string; body?: string }[]; className?: string }) {
   return (
     <ol className={cn("relative grid gap-6 lg:grid-cols-5 lg:gap-4", className)}>
       {steps.map((s, i) => (
@@ -23,7 +23,7 @@ export function Lifecycle({ steps, className }: { steps: { title: string; body: 
           </span>
           <div>
             <h3 className="font-bold">{s.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
+            {s.body ? <p className="mt-1 text-sm text-muted-foreground">{s.body}</p> : null}
           </div>
         </li>
       ))}

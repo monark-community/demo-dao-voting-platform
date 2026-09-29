@@ -1,13 +1,12 @@
 "use client"
 
-import { CheckIcon, Loader2Icon, PlusIcon, WalletIcon, XCircleIcon } from "lucide-react"
+import { Loader2Icon, PlusIcon, WalletIcon, XCircleIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
-import { NetworkBadge } from "@/components/ui/network-badge"
 import { href } from "@/i18n/config"
 import { useDemo, useStorageOk } from "@/lib/demo/store"
 import { connectWallet } from "@/lib/demo/wallet"
@@ -15,27 +14,22 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { DemoControls } from "./demo-controls"
-import { Disclaimer } from "./disclaimer"
 
-/** App chrome under the site header: network, disclaimer, demo controls, section tabs; gates on wallet connection. */
+/**
+ * App chrome under the site header: ONE compact bar with the section nav on
+ * the left and the network + demo controls pill and "New proposal" on the
+ * right. No testnet strip: that line lives in the wallet prompt, once per
+ * transaction. Gates on wallet connection.
+ */
 export function AppFrame({ children }: { children: ReactNode }) {
   const demo = useDemo()
   const storageOk = useStorageOk()
-  const { app, disclaimer } = useAppCopy()
+  const { app } = useAppCopy()
   const connected = demo?.wallet.status === "connected"
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="border-b bg-secondary/40">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6">
-          <NetworkBadge name={app.network} variant="outline" icon={<span className="block size-full rounded-full bg-success" />} />
-          <Disclaimer text={disclaimer} className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1" />
-          <div className="ml-auto sm:ml-0">
-            <DemoControls />
-          </div>
-        </div>
-      </div>
-      {connected ? <AppNav /> : null}
+      <AppBar connected={connected} />
       {!storageOk ? (
         <p role="alert" className="mx-auto mt-4 w-full max-w-6xl px-4 text-sm text-warning sm:px-6">
           {app.storageError}
@@ -48,7 +42,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   )
 }
 
-function AppNav() {
+function AppBar({ connected }: { connected: boolean }) {
   const { app, locale } = useAppCopy()
   const pathname = usePathname() ?? ""
   const base = href(locale, "/app")
@@ -60,32 +54,38 @@ function AppNav() {
   const onNew = pathname.startsWith(`${base}/new`)
   return (
     <div className="border-b">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6">
-        <nav aria-label={app.nav.label} className="-mx-1 min-w-0 flex-1 overflow-x-auto px-1">
-          <ul className="flex items-center gap-1">
-            {items.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={item.active ? "page" : undefined}
-                  className={cn(
-                    "inline-flex h-10 items-center rounded-full px-3.5 text-sm font-bold whitespace-nowrap transition-colors duration-150",
-                    item.active ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <Button asChild size="sm" variant={onNew ? "outline" : "default"} className="h-10 shrink-0 px-4">
-          <Link href={`${base}/new`} aria-current={onNew ? "page" : undefined}>
-            <PlusIcon aria-hidden="true" />
-            <span className="hidden sm:inline">{app.nav.newProposal}</span>
-            <span className="sr-only sm:hidden">{app.nav.newProposal}</span>
-          </Link>
-        </Button>
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6">
+        {connected ? (
+          <nav aria-label={app.nav.label} className="-mx-1 min-w-0 flex-1 overflow-x-auto px-1">
+            <ul className="flex items-center gap-1">
+              {items.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={item.active ? "page" : undefined}
+                    className={cn(
+                      "inline-flex h-10 items-center rounded-full px-3 text-sm font-bold whitespace-nowrap transition-colors duration-150 sm:px-3.5",
+                      item.active ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : (
+          <div className="flex-1" />
+        )}
+        <DemoControls />
+        {connected ? (
+          <Button asChild size="sm" variant={onNew ? "outline" : "default"} className="hidden h-10 shrink-0 px-4 sm:inline-flex">
+            <Link href={`${base}/new`} aria-current={onNew ? "page" : undefined}>
+              <PlusIcon aria-hidden="true" />
+              {app.nav.newProposal}
+            </Link>
+          </Button>
+        ) : null}
       </div>
     </div>
   )
@@ -121,14 +121,6 @@ function ConnectGate() {
         {g.title}
       </h1>
       <p className="mt-3 text-muted-foreground">{g.body}</p>
-      <ul className="mt-6 flex flex-col gap-2 text-left text-sm">
-        {g.features.map((f) => (
-          <li key={f} className="flex items-center gap-2">
-            <CheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
-            {f}
-          </li>
-        ))}
-      </ul>
       <Button
         size="lg"
         className="mt-8 w-full sm:w-auto"

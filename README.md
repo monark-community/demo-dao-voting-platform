@@ -48,7 +48,7 @@ All demo behaviour lives in a small typed data layer in `src/lib/demo/`, shaped 
 | `permissions.ts` | Who can publish or cancel, mirroring the contract's checks so the UI can explain each lock. |
 | `examples.ts` | Worked examples for the marketing pages, computed from the seed at build time. |
 
-The **Demo controls** (in the app strip) switch your role (admin, proposer, voter), turn live voters on or off, slow the network, force the next transaction to fail, and **reset the demo**.
+The **Demo controls** (the "Sepolia testnet" pill in the app bar) switch your role (admin, proposer, voter), turn live voters on or off, slow the network, force the next transaction to fail, and **reset the demo**.
 
 ## Project structure
 
@@ -64,7 +64,7 @@ src/
       opengraph-image.tsx     per-locale OG image
     sitemap.ts, robots.ts, icon.svg, globals.css (Monark cream / espresso tokens)
   components/
-    site/                     standard Monark header, footer, pairing, locale and theme switches
+    site/                     standard Monark header (brand, Demo chip), footer, locale and theme switches
     demo/                     app screens and panels
     diagrams/                 tally bars, voting-model dots, lifecycle strip
     home/                     animated hero tally
@@ -72,7 +72,8 @@ src/
   i18n/                       typed EN/FR dictionaries (French must satisfy the English shape)
   lib/demo/                   simulated chain, wallet and governance data layer
 scripts/screenshots.mjs       Playwright visual check
-docs/                         site plan, assets, screenshots
+scripts/wordcount.mjs         words per page (simplification pass); dictcount.mjs: words per dictionary section
+docs/                         site plan, simplification pass, assets, screenshots
 ```
 
 Stack: Next.js 16 (App Router, TypeScript strict), Tailwind CSS v4, shadcn/ui on the [Monark UI registry](https://ui.monark.io), `lucide-react`, `next-themes`, `sonner`.

@@ -46,7 +46,7 @@ export function ActivityRail() {
   const now = useNow()
   const { app, locale } = useAppCopy()
   if (!demo) return null
-  const items = demo.activity.slice(0, 7)
+  const items = demo.activity.slice(0, 4)
   return (
     <Card className="flex flex-col gap-4">
       <h2 className="text-lg font-bold">{app.activity.title}</h2>

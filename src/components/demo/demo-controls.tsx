@@ -11,12 +11,15 @@ import { Switch } from "@/components/ui/switch"
 import { ROLES } from "@/lib/demo/permissions"
 import { resetDemo, setSettings, update, useDemo } from "@/lib/demo/store"
 import type { Role } from "@/lib/demo/types"
-import { t } from "@/i18n/t"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 
-/** Visible demo controls: network speed, forced failure, and "Reset demo". */
+/**
+ * The app bar's one demo element: a pill showing the (simulated) network that
+ * opens the demo controls: role, live voters, network speed, forced failure,
+ * and "Reset demo".
+ */
 export function DemoControls() {
   const demo = useDemo()
   const { app, seed, locale, terms } = useAppCopy()
@@ -27,7 +30,6 @@ export function DemoControls() {
   const me = demo.members.find((m) => m.address === demo.wallet.address)
   const setRole = (role: Role) => {
     update((s) => ({ ...s, members: s.members.map((m) => (m.address === s.wallet.address ? { ...m, role } : m)) }))
-    toast.success(t(c.roleChanged, { role: terms.roles[role].toLowerCase() }))
   }
 
   return (
@@ -39,9 +41,12 @@ export function DemoControls() {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" title={c.open} className="h-10 shrink-0 px-3">
+          <span className="size-2 rounded-full bg-success" aria-hidden="true" />
+          <span className="hidden sm:inline">{app.network}</span>
+          <span aria-hidden="true" className="hidden h-4 w-px bg-border sm:block" />
           <SlidersHorizontalIcon aria-hidden="true" />
-          {c.open}
+          <span className="sr-only lg:not-sr-only">{c.open}</span>
           {demo.settings.failNext || demo.settings.slow ? (
             <span className="size-2 rounded-full bg-warning" aria-hidden="true" />
           ) : null}

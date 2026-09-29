@@ -2,6 +2,7 @@
 
 import {
   ArrowLeftIcon,
+  ChevronDownIcon,
   BanknoteIcon,
   CalendarClockIcon,
   FastForwardIcon,
@@ -11,17 +12,17 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { fmtPower, liveOutcome, OutcomeChip, TallyView } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
+import { InfoTip } from "@/components/ui/info-tip"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
 import { cancelProposal, endVotingNow, executeProposal } from "@/lib/demo/ops"
 import { canCancel } from "@/lib/demo/permissions"
-import { getDemo, useDemo, useNow } from "@/lib/demo/store"
+import { useDemo, useNow } from "@/lib/demo/store"
 import { outcomeOf, reweigh, statusOf, tally } from "@/lib/demo/tally"
 import type { Choice, DemoState, Proposal, VotingModel } from "@/lib/demo/types"
 import { fmtDate, fmtNumber, fmtPctNumber, fmtRelative } from "@/lib/format"
@@ -29,7 +30,6 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { Avatar, Card, ChoicePill, StatusBadge, useNameOf } from "./bits"
-import { Disclaimer } from "./disclaimer"
 import { TxFeedback } from "./tx-feedback"
 import { VotePanel } from "./vote-panel"
 
@@ -245,11 +245,14 @@ function ComparePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
   const outcomeLabel = { passed: terms.status.passed, defeated: terms.status.defeated, noQuorum: terms.status.noQuorum }[altOutcome]
 
   return (
-    <Card aria-labelledby="compare-title">
-      <h2 id="compare-title" className="text-lg font-bold">
-        {c.title}
-      </h2>
-      <p className="mt-1 max-w-[68ch] text-sm text-muted-foreground">{c.body}</p>
+    // Context on demand: the re-weighing stays collapsed until asked for.
+    <details className="group rounded-2xl border bg-card text-card-foreground">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 sm:px-6 [&::-webkit-details-marker]:hidden">
+        <h2 className="text-lg font-bold">{c.title}</h2>
+        <ChevronDownIcon className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+      </summary>
+      <div className="border-t px-5 pt-4 pb-5 sm:px-6 sm:pb-6">
+      <p className="text-sm text-muted-foreground">{c.body}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label={c.title}>
         <span className="inline-flex h-10 items-center rounded-full border border-dashed px-4 text-sm font-semibold text-muted-foreground">
           {c.official}: {terms.modelsShort[p.model]}
@@ -274,7 +277,8 @@ function ComparePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
         <strong>{t(c.would, { outcome: outcomeLabel.toLowerCase() })}</strong>{" "}
         <span className="text-muted-foreground">{altOutcome === officialOutcome ? c.same : c.different}</span>
       </p>
-    </Card>
+      </div>
+    </details>
   )
 }
 
@@ -285,7 +289,7 @@ function VotesList({ p, demo, now }: { p: Proposal; demo: DemoState; now: number
   const [all, setAll] = useState(false)
   const me = demo.wallet.address
   const sorted = [...p.ballots].sort((a, b) => (a.voter === me ? -1 : b.voter === me ? 1 : b.at - a.at))
-  const shown = all ? sorted : sorted.slice(0, 6)
+  const shown = all ? sorted : sorted.slice(0, 3)
   return (
     <Card aria-labelledby="votes-title">
       <h2 id="votes-title" className="text-lg font-bold">
@@ -311,7 +315,7 @@ function VotesList({ p, demo, now }: { p: Proposal; demo: DemoState; now: number
           ))}
         </ul>
       )}
-      {sorted.length > 6 ? (
+      {sorted.length > 3 ? (
         <Button variant="outline" size="sm" className="mt-3" onClick={() => setAll((x) => !x)}>
           {all ? v.showLess : t(v.showAll, { n: sorted.length })}
         </Button>
@@ -354,7 +358,7 @@ function Timeline({ p, demo, now }: { p: Proposal; demo: DemoState; now: number 
 
 function ExecutePanel({ p, demo, status }: { p: Proposal; demo: DemoState; status: ReturnType<typeof statusOf> }) {
   const copy = useAppCopy()
-  const { app, disclaimer, locale } = copy
+  const { app, locale } = copy
   const e = app.proposal.execute
   const tx = useTx()
   if (status !== "passed" && !(status === "executed" && tx.state.phase === "confirmed")) return null
@@ -378,17 +382,14 @@ function ExecutePanel({ p, demo, status }: { p: Proposal; demo: DemoState; statu
         ],
         movesValue: act.kind === "transfer",
       },
-      (hash) => {
-        executeProposal(p.id, hash)
-        toast.success(t(app.toasts.executed, { title: p.title }))
-      }
+      // No toast: the receipt and the "Executed" status confirm it in place.
+      (hash) => executeProposal(p.id, hash)
     )
   return (
     <Card aria-labelledby="execute-title" className="border-primary/60">
       <h2 id="execute-title" className="text-lg font-bold">
         {e.title}
       </h2>
-      <p className="mt-2 text-sm text-muted-foreground">{e.body}</p>
       <p className="mt-3 rounded-xl border bg-muted/50 p-3 text-sm font-semibold">{actionText(p, copy)}</p>
       {insufficient && act.kind === "transfer" ? (
         <p role="alert" className="mt-3 text-sm text-destructive">
@@ -401,13 +402,12 @@ function ExecutePanel({ p, demo, status }: { p: Proposal; demo: DemoState; statu
         </Button>
       ) : null}
       <TxFeedback className="mt-4" state={tx.state} confirmedLabel={e.done} onRetry={run} onDismiss={tx.reset} />
-      {act.kind === "transfer" ? <Disclaimer text={disclaimer} className="mt-4" /> : null}
     </Card>
   )
 }
 
 function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
-  const { app, terms } = useAppCopy()
+  const { app } = useAppCopy()
   const m = app.proposal.manage
   const tx = useTx()
   const [confirming, setConfirming] = useState(false)
@@ -417,7 +417,6 @@ function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
     void tx.run({ title: app.summaries.cancel, rows: [{ label: app.summaries.executeRows.proposal, value: p.title }], movesValue: false }, (hash) => {
       cancelProposal(p.id, hash)
       setConfirming(false)
-      toast.success(app.toasts.cancelled)
     })
 
   return (
@@ -425,21 +424,12 @@ function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
       <h2 id="manage-title" className="text-lg font-bold">
         {m.title}
       </h2>
-      <div className="rounded-xl border border-dashed p-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            endVotingNow(p.id)
-            const after = getDemo()
-            const closed = after?.proposals.find((x) => x.id === p.id)
-            if (after && closed) toast(t(app.toasts.closed, { outcome: terms.status[outcomeOf(tally(closed, after.members))] }))
-          }}
-        >
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" onClick={() => endVotingNow(p.id)}>
           <FastForwardIcon aria-hidden="true" />
           {m.endNow}
         </Button>
-        <p className="mt-2 text-xs text-muted-foreground">{m.endNowHint}</p>
+        <InfoTip label={m.endNowTip}>{m.endNowHint}</InfoTip>
       </div>
       {allowed ? (
         !confirming ? (
@@ -447,7 +437,6 @@ function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
             <Button variant="destructive" size="sm" onClick={() => setConfirming(true)} disabled={tx.busy}>
               {m.cancel}
             </Button>
-            <p className="mt-2 text-xs text-muted-foreground">{m.cancelHint}</p>
           </div>
         ) : (
           <div role="alertdialog" aria-labelledby="cancel-q" className="flex flex-col gap-3 rounded-xl border border-destructive/40 p-3">

@@ -1,4 +1,4 @@
-import { ArrowRightIcon, HandshakeIcon, ScrollTextIcon, ZapIcon } from "lucide-react"
+import { ArrowRightIcon } from "lucide-react"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -10,10 +10,10 @@ import { HeroTally } from "@/components/home/hero-tally"
 import { SectionDivider } from "@/components/site/section-divider"
 import { Button } from "@/components/ui/button"
 import { href, isLocale } from "@/i18n/config"
-import { getDictionary, t } from "@/i18n"
+import { getDictionary } from "@/i18n"
 import { sameBallotsExample } from "@/lib/demo/examples"
 import type { VotingModel } from "@/lib/demo/types"
-import { fmtNumber, fmtPctNumber } from "@/lib/format"
+import { fmtNumber } from "@/lib/format"
 import { pageMetadata } from "@/lib/metadata"
 import { PHOTOS } from "@/lib/photos"
 import { cn } from "@/lib/utils"
@@ -25,15 +25,12 @@ export async function generateMetadata({ params }: PageProps<"/[locale]">): Prom
   return pageMetadata(locale, "/", null, d.description)
 }
 
-const OUTCOME_ICONS = [ScrollTextIcon, HandshakeIcon, ZapIcon]
-
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const dict = getDictionary(locale)
   const h = dict.home
   const ex = sameBallotsExample(dict, locale)
-  const tokenFor = fmtPctNumber(locale, ex.token.forShare, 0)
 
   return (
     <>
@@ -51,8 +48,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pt-20 lg:pb-24">
           <div>
-            <p className="eyebrow text-primary-ink">{h.eyebrow}</p>
-            <h1 className="mt-4 text-[2.25rem] leading-[1.05] font-extrabold tracking-display sm:text-5xl lg:text-[4.25rem]">{h.title}</h1>
+            <h1 className="text-[2.25rem] leading-[1.05] font-extrabold tracking-display sm:text-5xl lg:text-[4.25rem]">{h.title}</h1>
             <p className="mt-6 max-w-[34rem] text-lg text-muted-foreground sm:text-xl">{h.sub}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-12 px-6 text-base">
@@ -65,48 +61,22 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 <Link href={href(locale, "/how-it-works")}>{h.ctaSecondary}</Link>
               </Button>
             </div>
-            <p className="mt-6 text-xs text-muted-foreground">{dict.common.demoBadge}</p>
           </div>
           <HeroTally locale={locale} labels={{ ...dict.terms, tally: dict.app.proposal.tally }} copy={h.hero} />
         </div>
       </section>
 
-      {/* Outcomes */}
-      <section aria-labelledby="outcomes-title" className="border-y bg-card">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-          <h2 id="outcomes-title" className="max-w-[24ch] text-3xl font-bold tracking-display sm:text-4xl">
-            {h.outcomes.title}
-          </h2>
-          <p className="mt-4 max-w-[68ch] text-muted-foreground">{h.outcomes.intro}</p>
-          <ul className="mt-10 grid gap-8 md:grid-cols-3">
-            {h.outcomes.items.map((item, i) => {
-              const Icon = OUTCOME_ICONS[i] ?? ZapIcon
-              return (
-                <li key={item.title}>
-                  <Icon className="size-7 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                  <h3 className="mt-4 text-xl font-bold">{item.title}</h3>
-                  <p className="mt-2 text-muted-foreground">{item.body}</p>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      </section>
-
       {/* Voting models */}
       <section aria-labelledby="models-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <p className="eyebrow text-primary-ink">{h.models.eyebrow}</p>
-        <h2 id="models-title" className="mt-3 text-3xl font-bold tracking-display sm:text-4xl">
+        <h2 id="models-title" className="text-3xl font-bold tracking-display sm:text-4xl">
           {h.models.title}
         </h2>
-        <p className="mt-4 max-w-[68ch] text-muted-foreground">{h.models.body}</p>
         <ul className="mt-10 grid gap-4 md:grid-cols-3">
           {h.models.items.map((m) => (
             <li key={m.key} className="flex flex-col rounded-3xl border bg-card p-6">
               <ModelDots model={m.key as VotingModel} className="h-28 w-full" />
               <h3 className="mt-5 text-xl font-bold">{m.title}</h3>
               <p className="mt-2 flex-1 text-sm text-muted-foreground">{m.body}</p>
-              <p className="mt-4 text-xs font-bold text-primary-ink">{m.best}</p>
             </li>
           ))}
         </ul>
@@ -115,12 +85,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <div>
             <h3 className="text-xl font-bold">{h.models.same.title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              {t(h.models.same.body, {
-                ballots: ex.ballots,
-                tokenFor,
-                walletFor: ex.wallet.for,
-                walletAgainst: ex.wallet.against,
-              })}
+              {h.models.same.body}
             </p>
             <Link
               href={href(locale, "/app/proposals/demo-day-venue")}
@@ -184,8 +149,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* Who */}
       <section aria-labelledby="who-title" className="border-y bg-card">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-          <p className="eyebrow text-primary-ink">{h.who.eyebrow}</p>
-          <h2 id="who-title" className="mt-3 text-3xl font-bold tracking-display sm:text-4xl">
+          <h2 id="who-title" className="text-3xl font-bold tracking-display sm:text-4xl">
             {h.who.title}
           </h2>
           <ul className="mt-10 grid gap-6 md:grid-cols-3">
@@ -199,8 +163,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                     </div>
                   ) : null}
                   <div className="p-6">
-                    <p className="inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold">{item.model}</p>
-                    <h3 className="mt-3 text-xl font-bold">{item.title}</h3>
+                    <h3 className="text-xl font-bold">{item.title}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">{item.body}</p>
                   </div>
                 </li>
@@ -230,12 +193,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Closing */}
       <section className="mx-auto w-full max-w-6xl px-4 py-16 text-center sm:px-6 lg:py-24">
         <h2 className="mx-auto max-w-[22ch] text-3xl font-extrabold tracking-display sm:text-5xl">{h.closing.title}</h2>
-        <p className="mx-auto mt-4 max-w-[52ch] text-lg text-muted-foreground">{h.closing.body}</p>
         <Button asChild size="lg" className="mt-8 h-12 px-6 text-base">
           <Link href={href(locale, "/app")}>
             {h.closing.cta}
