@@ -62,7 +62,6 @@ async function patch(page, fn, arg) {
   await page.evaluate(
     ([key, src, a]) => {
       const s = JSON.parse(localStorage.getItem(key))
-      // eslint-disable-next-line no-new-func
       new Function("s", "a", src)(s, a)
       localStorage.setItem(key, JSON.stringify(s))
     },
