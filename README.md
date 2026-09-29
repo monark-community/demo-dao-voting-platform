@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GovChain by Monark
 
-## Getting Started
+GovChain is Monark's governance module: one place for a student association, DAO or co-op to **propose, vote and act on decisions** under rules everyone can read. Each proposal fixes its voting model (one wallet one vote, token-weighted, or token-weighted with delegation), its quorum and threshold, and the action it triggers if it passes (a treasury transfer or a rule change). Members vote with a public reason, delegate their power to someone they trust, and anyone can execute a passed proposal exactly as voted.
 
-First, run the development server:
+This repository is the **demo site**: a marketing page, a "how it works" explainer, and an interactive demo in which you join the fictional *Riverbend Blockchain Society* and vote, delegate, publish and execute proposals. Everything is simulated: no real chain, wallet, tokens or backend.
+
+- Project documentation: https://www.monark.io/en/project/dao-voting-platform
+- Site plan (product brief, page map, flows, copy, design decisions): [`docs/site-plan.md`](docs/site-plan.md)
+- Asset credits: [`docs/assets.md`](docs/assets.md)
+- Screenshots of every page and flow: [`docs/screenshots/`](docs/screenshots/)
+
+> Testnet demo · not financial advice · no real funds.
+
+## Run it locally
+
+Requirements: Node.js 22 and pnpm 10.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev            # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm lint           # ESLint (next/core-web-vitals + TypeScript)
+pnpm typecheck      # next typegen && tsc --noEmit
+pnpm build          # production build; every page prerenders
+pnpm start          # serve the production build
+pnpm screenshots    # Playwright screenshots into docs/screenshots (needs `pnpm start -p 3138` running)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No environment variables are needed. `NEXT_PUBLIC_SITE_URL` optionally overrides the canonical URL (default `https://govchain.monark.io`).
 
-## Learn More
+## How the demo simulation works
 
-To learn more about Next.js, take a look at the following resources:
+All demo behaviour lives in a small typed data layer in `src/lib/demo/`, shaped after an OpenZeppelin-style **Governor** contract with an **ERC20Votes** token, so it could be replaced by wagmi/viem calls without touching the UI:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| File | Role |
+|-|-|
+| `types.ts` | Domain types: space, members, proposals, ballots, actions, activity, wallet and transaction states. |
+| `tally.ts` | Pure governance math shared by server pages and the app: voting power per model, delegation, quorum, threshold, outcome, status. |
+| `seed.ts` | The seeded space: 20 members, a treasury, four delegates and eight proposals at every stage, with text from the dictionaries so it appears in the visitor's language. |
+| `store.ts` | A tiny external store persisted to `localStorage` (every access wrapped in try/catch), the simulated wallet prompt, and a shared clock. |
+| `chain.ts` | One transaction's lifecycle: wallet prompt (confirm or reject), pending with a hash for a realistic block time (1.2–2.4 s, or 3–6 s on "slow network"), then confirmed or reverted. |
+| `wallet.ts` | Simulated wallet connection (a sign-in message, no fee). |
+| `ops.ts` | State changes applied on confirmation: `castVote`, `setDelegate`, `createProposal`, `executeProposal`, `cancelProposal`, plus `endVotingNow` (a demo clock jump) and the simulated live voters. |
+| `permissions.ts` | Who can publish or cancel, mirroring the contract's checks so the UI can explain each lock. |
+| `examples.ts` | Worked examples for the marketing pages, computed from the seed at build time. |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The **Demo controls** (in the app strip) switch your role (admin, proposer, voter), turn live voters on or off, slow the network, force the next transaction to fail, and **reset the demo**.
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/
+    [locale]/                 en and fr routes (proxy.ts redirects / to the preferred language)
+      page.tsx                home
+      how-it-works/           mechanics explainer
+      app/                    interactive demo: proposals, proposals/[id], new, delegates, results
+      credits/                photo, type and brand credits
+      pricing/                internal review only: unlinked, noindex, not in the sitemap
+      opengraph-image.tsx     per-locale OG image
+    sitemap.ts, robots.ts, icon.svg, globals.css (Monark cream / espresso tokens)
+  components/
+    site/                     standard Monark header, footer, pairing, locale and theme switches
+    demo/                     app screens and panels
+    diagrams/                 tally bars, voting-model dots, lifecycle strip
+    home/                     animated hero tally
+    ui/                       shadcn/ui and @monark registry components
+  i18n/                       typed EN/FR dictionaries (French must satisfy the English shape)
+  lib/demo/                   simulated chain, wallet and governance data layer
+scripts/screenshots.mjs       Playwright visual check
+docs/                         site plan, assets, screenshots
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Stack: Next.js 16 (App Router, TypeScript strict), Tailwind CSS v4, shadcn/ui on the [Monark UI registry](https://ui.monark.io), `lucide-react`, `next-themes`, `sonner`.
+
+## Deploying to Vercel
+
+Import the repository in Vercel and deploy with the framework defaults (Next.js, `pnpm install`, `pnpm build`). No `vercel.json` and no environment variables are required; the Node version is pinned in `package.json` (`engines.node: 22.x`).
+
+## Licence and credits
+
+Open source by the Monark community. Photos are from Unsplash (free licence), credited on `/credits` and in `docs/assets.md`. The Monark logo, mesh butterfly and social icons belong to Monark and are used under its brand guidelines.
