@@ -467,11 +467,6 @@ export function Composer() {
               </div>
             </Card>
           </fieldset>
-
-          <div className="flex flex-col gap-3 lg:hidden">
-            <SubmitBlock busy={tx.busy} label={c.submit} pending={c.pending} />
-          </div>
-          <TxFeedback state={tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} className="lg:hidden" />
         </form>
 
         <aside aria-labelledby="preview-title" className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
@@ -490,12 +485,12 @@ export function Composer() {
             </p>
             <p className="text-sm">
               {t(app.proposal.plain, {
-                needed: form.model === "wallet" ? `${needed} ${terms.wallets}` : fmtPower(locale, needed, form.model, terms),
+                needed: fmtPower(locale, needed, form.model, terms),
                 pct: form.thresholdPct,
               })}
             </p>
           </Card>
-          <div className="hidden flex-col gap-3 lg:flex">
+          <div className="flex flex-col gap-3">
             <Button size="lg" onClick={submit} disabled={tx.busy}>
               {tx.busy ? c.pending : c.submit}
             </Button>
@@ -509,14 +504,6 @@ export function Composer() {
 
 const selectCls =
   "h-10 w-full rounded-md border border-input bg-card px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
-
-function SubmitBlock({ busy, label, pending }: { busy: boolean; label: string; pending: string }) {
-  return (
-    <Button type="submit" size="lg" disabled={busy}>
-      {busy ? pending : label}
-    </Button>
-  )
-}
 
 function Field({
   id,

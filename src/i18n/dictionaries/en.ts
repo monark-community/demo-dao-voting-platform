@@ -75,6 +75,7 @@ const en = {
     quorumReached: "Quorum reached",
     threshold: "Threshold",
     votes: "votes",
+    wallet: "wallet",
     wallets: "wallets",
     of: "of",
   },

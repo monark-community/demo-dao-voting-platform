@@ -53,12 +53,13 @@ export function AppProvider({ value, children }: { value: AppCopy; children: Rea
       <WalletPrompt />
       <Toaster
         theme={resolvedTheme === "dark" ? "dark" : "light"}
-        // Top-right, just under the sticky 64px header and the app strip: page
-        // titles are left-aligned and the vote panel sits lower, so a toast
-        // never covers the tally it reports on. On phones it spans the width
-        // under the header, above the content rather than over the vote bar.
+        // Desktop: top-right, below the header, the network strip and the
+        // section tabs (~190px), where pages keep their right edge clear
+        // (titles are left-aligned and the vote panel starts lower), so a
+        // toast never covers the tally or panel it reports on. Phones: full
+        // width over the network strip, which carries no reported content.
         position="top-right"
-        offset={{ top: 80, right: 24 }}
+        offset={{ top: 196, right: 24 }}
         mobileOffset={{ top: 72, left: 16, right: 16 }}
         toastOptions={{
           classNames: {

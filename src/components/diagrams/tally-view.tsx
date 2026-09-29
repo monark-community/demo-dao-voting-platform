@@ -12,7 +12,8 @@ export type TallyLabels = Dictionary["terms"] & { tally: Dictionary["app"]["prop
 
 /** "7,950 tGOV" or "6 wallets", depending on the model. */
 export function fmtPower(locale: Locale, n: number, model: VotingModel, terms: Dictionary["terms"]): string {
-  return model === "wallet" ? `${fmtNumber(locale, n)} ${terms.wallets}` : `${fmtNumber(locale, n)} tGOV`
+  if (model !== "wallet") return `${fmtNumber(locale, n)} tGOV`
+  return `${fmtNumber(locale, n)} ${n === 1 ? terms.wallet : terms.wallets}`
 }
 
 export type LiveOutcome = "passing" | "failing" | "noQuorum"
@@ -71,7 +72,7 @@ export function TallyView({
   const part = tl.participation + ghostAll
   const partShare = tl.totalPower > 0 ? Math.min(1, part / tl.totalPower) : 0
   const quorumShare = tl.totalPower > 0 ? tl.quorumNeeded / tl.totalPower : 0
-  const quorumOk = part >= tl.quorumNeeded && part > 0
+  const quorumOk = tl.quorumReached
   const pw = (n: number) => fmtPower(locale, n, model, labels)
 
   return (

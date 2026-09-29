@@ -75,6 +75,7 @@ const fr: Dictionary = {
     quorumReached: "Quorum atteint",
     threshold: "Seuil",
     votes: "voix",
+    wallet: "portefeuille",
     wallets: "portefeuilles",
     of: "sur",
   },
