@@ -184,7 +184,7 @@ const en = {
       steps: [
         "Participation: 7,950 of {needed} needed. Quorum reached.",
         "For share: 5,050 ÷ (5,050 + 1,800) = 73.7%. More than 50%, so it passes.",
-        "Without the last 1,250 tGOV ballot, participation would have been 6,700: same For share, but defeated for lack of quorum.",
+        "Without the last 1,250 tGOV ballot, participation would have been 6,700, short of quorum: defeated, even with most ballots For.",
       ],
       gaugeLabel: "Participation against quorum",
     },

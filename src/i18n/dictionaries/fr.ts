@@ -184,7 +184,7 @@ const fr: Dictionary = {
       steps: [
         "Participation : 7 950 pour {needed} requis. Quorum atteint.",
         "Part de « pour » : 5 050 ÷ (5 050 + 1 800) = 73,7 %. Plus de 50 % : la proposition est adoptée.",
-        "Sans le dernier bulletin de 1 250 tGOV, la participation aurait été de 6 700 : même part de « pour », mais rejet faute de quorum.",
+        "Sans le dernier bulletin de 1 250 tGOV, la participation aurait été de 6 700, sous le quorum : rejet, même avec une majorité de « pour ».",
       ],
       gaugeLabel: "Participation par rapport au quorum",
     },

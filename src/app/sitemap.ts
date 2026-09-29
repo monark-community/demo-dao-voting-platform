@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next"
 import { locales, SITE_URL } from "@/i18n/config"
 
 // /pricing is deliberately absent: it is an unlinked internal-review page.
-const PATHS = ["", "/how-it-works", "/app", "/credits"]
+const PATHS = ["", "/how-it-works", "/app", "/app/delegates", "/app/results", "/credits"]
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return PATHS.flatMap((path) =>
