@@ -98,14 +98,22 @@ const ROLES: Partial<Record<MemberKey, Role>> = {
   you: "proposer",
 }
 
-const DELEGATIONS: Partial<Record<MemberKey, DelegateKey>> = {
-  mei: "priya",
-  noah: "priya",
-  zoe: "kenji",
-  aisha: "kenji",
-  mateo: "amara",
-  lucas: "amara",
-  hannah: "julien",
+/**
+ * Who lent power to whom. Mateo splits his 650 tGOV between Amara and Julien,
+ * who vote alike on every seeded delegation proposal, so the split shows in
+ * the demo without moving any seeded outcome.
+ */
+const DELEGATIONS: Partial<Record<MemberKey, [DelegateKey, number][]>> = {
+  mei: [["priya", 500]],
+  noah: [["priya", 300]],
+  zoe: [["kenji", 350]],
+  aisha: [["kenji", 450]],
+  mateo: [
+    ["amara", 400],
+    ["julien", 250],
+  ],
+  lucas: [["amara", 750]],
+  hannah: [["julien", 900]],
 }
 
 export const addressOf = (key: MemberKey) => (key === "you" ? YOU_ADDRESS : seededAddress(`riverbend:${key}`))
@@ -305,13 +313,12 @@ const H = 3_600_000
 
 export function createSeed(copy: SeedCopy, locale: "en" | "fr", now = Date.now()): DemoState {
   const members: Member[] = MEMBER_KEYS.map((key) => {
-    const delegate = DELEGATIONS[key]
     return {
       address: addressOf(key),
       name: copy.names[key],
       balance: BALANCES[key],
       role: ROLES[key] ?? "voter",
-      delegate: delegate ? addressOf(delegate) : null,
+      delegations: (DELEGATIONS[key] ?? []).map(([to, amount]) => ({ to: addressOf(to), amount })),
       ...(copy.titles[key] ? { title: copy.titles[key] } : {}),
       ...((DELEGATE_KEYS as readonly string[]).includes(key) ? { pitch: copy.pitches[key as DelegateKey] } : {}),
     }
@@ -364,16 +371,17 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr", now = Date.now()
     }
   })
 
-  Object.entries(DELEGATIONS).forEach(([from, to], i) => {
-    activity.push({
-      id: `delegation:${from}`,
-      kind: "delegated",
-      at: now - (1100 - i * 37) * H,
-      actor: addressOf(from as MemberKey),
-      target: addressOf(to),
-      weight: BALANCES[from as MemberKey],
-      hash: seededHash(`delegation:${from}`),
-    })
+  Object.entries(DELEGATIONS).forEach(([from, splits], i) => {
+    for (const [to, amount] of splits ?? [])
+      activity.push({
+        id: `delegation:${from}:${to}`,
+        kind: "delegated",
+        at: now - (1100 - i * 37) * H,
+        actor: addressOf(from as MemberKey),
+        target: addressOf(to),
+        weight: amount,
+        hash: seededHash(`delegation:${from}:${to}`),
+      })
   })
   activity.sort((a, b) => b.at - a.at)
 

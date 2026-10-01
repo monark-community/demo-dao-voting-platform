@@ -4,12 +4,19 @@
  * State changes applied once a simulated transaction confirms. Each maps to a
  * Governor / ERC20Votes call: castVoteWithReason, delegate, propose, execute,
  * cancel. The UI calls these through useTx().run(summary, apply).
+ *
+ * Partial delegation is the exception: ERC20Votes delegates a holder's whole
+ * balance to a single address. Splitting it needs one sub-delegation proxy
+ * per delegate (Uniswap's Franchiser pattern: move N tokens into a proxy that
+ * calls delegate(delegatee), withdraw them to take the power back) or a
+ * governor built for fractional votes (ScopeLift's Flexible Voting).
+ * setDelegations() simulates the proxy route in a single transaction.
  */
 
 import { randomHash, randomId } from "./ids"
 import { getDemo, tickClock, update, updateProposal } from "./store"
-import { canVoteDirectly, statusOf, votingPower } from "./tally"
-import type { Activity, Category, Choice, DemoState, Proposal, ProposalAction, VotingModel } from "./types"
+import { amountTo, canVoteDirectly, statusOf, votingPower } from "./tally"
+import type { Activity, Category, Choice, Delegation, DemoState, Proposal, ProposalAction, VotingModel } from "./types"
 
 const H = 3_600_000
 const D = 24 * H
@@ -34,24 +41,36 @@ export function castVote(proposalId: string, choice: Choice, reason: string, has
   })
 }
 
-/** Delegate your power to `to`, or take it back with `null`. */
-export function setDelegate(to: string | null, hash: string) {
+/**
+ * Replace your delegation split: how much tGOV each delegate holds for you.
+ * An empty list takes all your power back. Logs one entry per delegate whose
+ * share changed.
+ */
+export function setDelegations(next: Delegation[], hash: string) {
   update((s) => {
     const me = s.wallet.address
     const current = s.members.find((m) => m.address === me)
     if (!current) return s
-    const weight = current.balance
+    const clean = next.filter((d) => d.amount > 0 && d.to !== me).map((d) => ({ to: d.to, amount: Math.round(d.amount) }))
+    if (clean.reduce((sum, d) => sum + d.amount, 0) > current.balance) return s
+    const at = Date.now()
+    const targets = [...new Set([...current.delegations, ...clean].map((d) => d.to))]
+    let activity = s.activity
+    for (const to of targets) {
+      const before = amountTo(current.delegations, to)
+      const after = amountTo(clean, to)
+      if (before === after) continue
+      activity = log(
+        { ...s, activity },
+        after > before
+          ? { kind: "delegated", at, actor: me, target: to, weight: after - before, hash }
+          : { kind: "undelegated", at, actor: me, target: to, weight: before - after, hash }
+      )
+    }
     return {
       ...s,
-      members: s.members.map((m) => (m.address === me ? { ...m, delegate: to } : m)),
-      activity: log(s, {
-        kind: to ? "delegated" : "undelegated",
-        at: Date.now(),
-        actor: me,
-        target: to ?? current.delegate ?? undefined,
-        weight,
-        hash,
-      }),
+      members: s.members.map((m) => (m.address === me ? { ...m, delegations: clean } : m)),
+      activity,
     }
   })
 }

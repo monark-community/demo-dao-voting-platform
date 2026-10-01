@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react"
 
 import { createSeed, type SeedCopy } from "./seed"
-import type { DemoSettings, DemoState, Proposal, TxSummary, WalletState } from "./types"
+import type { DemoSettings, DemoState, Member, Proposal, TxSummary, WalletState } from "./types"
 
 /**
  * The demo's single source of truth: a tiny external store persisted to
@@ -39,11 +39,19 @@ function load(): DemoState | null {
     if (parsed?.version !== 1 || !Array.isArray(parsed.proposals) || !Array.isArray(parsed.members)) return null
     // A reload never resumes a half-finished connection.
     if (parsed.wallet.status === "connecting") parsed.wallet.status = "disconnected"
+    parsed.members = parsed.members.map(migrateMember)
     return parsed
   } catch {
     storageOk = false
     return null
   }
+}
+
+/** State saved before partial delegation had one `delegate` holding the whole balance. */
+function migrateMember(m: Member & { delegate?: string | null }): Member {
+  if (Array.isArray(m.delegations)) return m
+  const { delegate, ...rest } = m
+  return { ...rest, delegations: delegate ? [{ to: delegate, amount: m.balance }] : [] }
 }
 
 /** Load saved state, or seed the examples in the visitor's language. Idempotent. */

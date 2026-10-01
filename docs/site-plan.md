@@ -28,7 +28,7 @@ Status: shipped on `develop`. Written before any code, then kept in sync with wh
 | Proposal | A decision put to a vote: title, reasoning, category, an optional action, and its rules (voting model, period, quorum, threshold). |
 | Voting power | How much one member's vote weighs. Measured in **tGOV**, the space's testnet governance token, or as one vote per wallet. |
 | Voting model | How power is counted, chosen per proposal: **one wallet, one vote**; **token-weighted**; **token-weighted with delegation** (the default). |
-| Delegation | Lending your voting power to a trusted member (a delegate) who votes with it. You can take it back at any time. |
+| Delegation | Lending some or all of your voting power to trusted members (delegates) who vote with it. You can split it across several delegates, keep the rest to vote yourself, and take it back at any time. Power lent to a delegate is never passed on (no chains). |
 | Quorum | The minimum participation for a result to count (for example 20% of all voting power). Abstentions count towards quorum. |
 | Threshold | The share of *For* among For + Against needed to pass (for example more than 50%, or 66% for rule changes). |
 | Voting period | How long the vote stays open (1 to 14 days). |
@@ -53,7 +53,7 @@ Status: shipped on `develop`. Written before any code, then kept in sync with wh
 Supporting benefits, as outcomes:
 
 1. **Everyone knows the rules before the vote starts.** Quorum, threshold, voting model and what happens if it passes are fixed on the proposal, and nobody can change them mid-vote.
-2. **Members who can't follow every vote still count.** Delegate your voting power to someone you trust, and take it back whenever you want.
+2. **Members who can't follow every vote still count.** Delegate some or all of your voting power to people you trust, and take it back whenever you want.
 3. **Decisions actually happen.** A passed proposal carries its own action (a treasury payment, a rule change), executed from the result, with a receipt anyone can check.
 
 ## 3. Hero
@@ -77,7 +77,7 @@ All routes live under `/{locale}` (`en`, `fr`). `/` and any locale-less path red
 | `/{locale}/app` | The interactive demo: the space's proposals. | Connect gate (when disconnected: title, one line, button) · Space header (name, members, treasury, participation) · Your voting power card (own, delegated to you, delegated away, role with an info popover) · Proposals with status tabs (Active, Passed, Closed, All) and search; rows show title, tally and deadline (the summary is on the proposal page) · Recent activity rail (4 entries) |
 | `/{locale}/app/proposals/[id]` | One proposal: read it, vote, follow the tally, execute it. | Header (status, category, author, time left) · Tally (bar, quorum marker, threshold, outcome) · Your vote panel · "Same ballots, other rules" comparison (collapsed disclosure) · Reasoning · The rules of this vote · Action (execution hook) · Votes cast (3 at a time, "Show all") · Timeline with receipts |
 | `/{locale}/app/new` | Create a proposal (proposers and admins). | Templates · Title, category, reasoning (hints as placeholders) · Action (signal, treasury transfer, rule change; what each does is in an info popover) · Rules (voting model, period, quorum, threshold) · Live preview card · Submit, with the one note "Once published, the text and rules can't change." |
-| `/{locale}/app/delegates` | Delegate your voting power, or take it back. | Title with an info popover (tokens stay put, take it back anytime) · Your power and current delegate · Delegates (name, pitch, power received, participation rate) · Delegate / undelegate |
+| `/{locale}/app/delegates` | Split your voting power across delegates, or take it back. | Title with an info popover (tokens stay put, take it back anytime) · Your power: the fan-out diagram (one line per delegate, as thick as their share, plus a dashed line for what you keep), "938 tGOV lent · 312 tGOV kept", an info popover on how splits work on-chain, and *Sign the new split* / *Discard changes* while editing or *Take back all my power* · Delegates (name, pitch, power received, participation rate) each with a *Your share* control: amount field, slider, 25% / 50% / Max presets, *Remove*, and "You lend X tGOV" |
 | `/{locale}/app/results` | Results tracking and analytics (a documented deliverable). | Summary (proposals, pass rate, average turnout) · Turnout per proposal against quorum (bar chart in SVG) · Outcomes by category · Your voting history |
 | `/{locale}/how-it-works` | For students, developers and careful members: the mechanics. Justified because the documentation frames GovChain as a teaching testbed (governance design, on-chain vs off-chain recording, contract logic). | One-line intro · The life of a proposal (diagram) · Quorum vs threshold with a worked example · The three voting models on the same ballots · Delegation · Roles and permissions table · On-chain vs off-chain vote recording · For developers (one line; the contract calls behind a "Show the contract calls" disclosure) · Call to action (heading + button) |
 | `/{locale}/credits` | Photo, font and icon credits (required by the asset rules). | Photos · Type and icons · Monark brand assets |
@@ -107,7 +107,7 @@ All transactions go through a simulated wallet prompt ("Confirm in your wallet":
 
 1. **Connect a wallet.** `/app` → "Connect demo wallet" → wallet prompt "Sign in to GovChain" (no fee) → *pending* ("Waiting for signature…") → *connected*: header shows the `connect-wallet` chip; the power card shows 1,250 tGOV, proposer role. *Failed*: rejecting shows "You declined the sign-in request. Nothing was shared." with retry.
 2. **Vote on an active proposal.** Proposal page → choose *For*, *Against* or *Abstain* → optional reason (280 characters) → *Cast your vote* → wallet prompt (proposal, choice, weight "1,250 tGOV") → *pending*: your ballot shows as a hatched ghost segment on the tally → *confirmed*: the segment fills, the quorum marker and outcome settle (e.g. "Quorum reached · Passing"), your vote appears first in the list with its receipt. *Failed*: "Failed. The transaction failed on the network. Nothing was recorded." with *Try again*; the choice and reason stay filled. Already voted: the panel shows your ballot and receipt instead of buttons (no toast). Delegated away: "You delegated your power to Amara." + *Manage delegation*. Other members keep voting live while a proposal is open (toggle in demo controls).
-3. **Delegate your voting power.** `/app/delegates` → pick a delegate (pitch, participation, power received) → *Delegate 1,250 tGOV* → wallet prompt → *pending*: a line carries your power to the delegate's card → *confirmed*: their power counts up, your card reads "Delegated to …", vote panels explain why you can't vote directly. *Undelegate* reverses it. Failed as above. Voters can delegate; everyone can undelegate.
+3. **Split your voting power.** `/app/delegates` → on a delegate's card, set *Your share* (amount, slider, or 25% / 50% / Max); the diagram previews the split with a "Preview: not signed yet" tag and a running "lent · kept" line → *Sign the new split* → wallet prompt (one row per delegate and "Kept for yourself") → *pending* → *confirmed*: delegates' power counts up, their cards read "Your delegate" and "You lend X tGOV". On proposals using delegation you vote with what you kept (the panel says how much is with your delegates); if you lent everything, the panel explains why you can't vote directly. *Take back all my power* reverses it. Failed as above. Saved demo state from before splits (one `delegate`) migrates to a single full-balance split.
 4. **Create a proposal with an action.** `/app/new` (proposer or admin; a voter sees a locked page: "Publishing needs the proposer role", "Or 2,000 tGOV. Switch role in Demo controls.", *Back to proposals*) → template or blank → title, category, reasoning → action: signal / treasury transfer (amount, token, recipient address validated `0x` + 40 hex, capped at the treasury balance) / rule change → rules: model, period, quorum, threshold, with a plain-language preview ("Passes if at least 8,000 tGOV take part and more than 50% of them vote For") → *Submit proposal* → wallet prompt → *pending* ("Publishing your proposal…") → *confirmed*: redirect to the new proposal, voting open (no toast). *Failed*: "Publishing failed on the network. Nothing was created." with *Try again*; the form stays filled. Validation errors are listed at the top and inline.
 5. **Close, then execute a passed proposal.** On an open proposal, the *Manage* card → *End voting now* (an info popover says it is demo-only) (a simulated clock jump) → the result is computed (passed, defeated or quorum not met) and stamped. On a passed proposal with an action → *Execute* → wallet prompt (the transfer or rule change, disclaimer) → *pending* → *confirmed*: status "Executed", treasury or space rules update, receipt in the timeline, results page updated. *Failed*: "Execution reverted. The treasury is unchanged; you can retry." Proposers can *Cancel* their own open proposal (admins any) with the same transaction states.
 
@@ -127,7 +127,7 @@ The shipped copy lives in `src/i18n/dictionaries/en.ts` and `fr.ts` (typed: Fren
 | Models H2 | Choose how power is counted | Choisissez comment le pouvoir se compte |
 | Model: wallet | **One wallet, one vote.** Every member weighs the same. | **Un portefeuille, une voix.** Chaque membre pèse autant. |
 | Model: token | **Token-weighted.** Ballots weigh by tGOV held. | **Pondéré par jetons.** Les bulletins pèsent selon les tGOV détenus. |
-| Model: delegated | **With delegation.** Lend your power to a delegate, take it back anytime. | **Avec délégation.** Confiez votre pouvoir à un délégué, reprenez-le quand vous voulez. |
+| Model: delegated | **With delegation.** Lend some or all of your power to delegates, take it back anytime. | **Avec délégation.** Confiez tout ou partie de votre pouvoir, reprenez-le quand vous voulez. |
 | Same ballots | The demo-day venue vote, counted two ways. (Two bars computed from the seed: passes by tokens, fails 9 to 11 by wallets.) | Le vote sur la salle du demo day, compté de deux façons. |
 | Lifecycle H2 | The life of a proposal | La vie d'une proposition |
 | Steps | Propose · Vote · Reach quorum · Result · Execute | Proposer · Voter · Atteindre le quorum · Résultat · Exécuter |
@@ -155,7 +155,8 @@ The shipped copy lives in `src/i18n/dictionaries/en.ts` and `fr.ts` (typed: Fren
 | No search match | No proposal matches "{query}". + *Clear search* | Aucune proposition ne correspond à « {query} ». + *Effacer la recherche* |
 | Outcome lines | Passing · Not passing · Quorum not reached yet · Passed · Defeated · Quorum not met · Executed · Cancelled | En voie d'adoption · En voie de rejet · Quorum pas encore atteint · Adoptée · Rejetée · Quorum non atteint · Exécutée · Annulée |
 | Vote panel | Cast your vote · For · Against · Abstain · Add a reason (optional) | Votez · Pour · Contre · Abstention · Ajoutez une raison (facultatif) |
-| Delegated away | You delegated your power to {name}. + *Manage delegation* | Vous avez confié votre pouvoir à {name}. + *Gérer la délégation* |
+| Delegated away (all) | You lent all your power to {names}. + *Manage delegation* | Vous avez confié tout votre pouvoir à {names}. + *Gérer la délégation* |
+| Delegated in part | You vote with the {kept} tGOV you kept; {lent} tGOV is with your delegates. | Vous votez avec les {kept} tGOV que vous avez gardés ; {lent} tGOV sont chez vos délégués. |
 | Wallet prompt | Confirm in your wallet · Estimated network fee · Confirm · Reject | Confirmez dans votre portefeuille · Frais de réseau estimés · Confirmer · Refuser |
 | Disclaimer (wallet prompt only, when value moves) | Testnet demo · not financial advice · no real funds | Démo sur testnet · ceci n'est pas un conseil financier · aucun fonds réel |
 | Pending | Waiting for the network… | En attente du réseau… |
@@ -181,7 +182,7 @@ Colour, type, logo, header and footer are fixed by the guidelines: cream / espre
 - **Signature moments.**
   1. **The tally settles.** Your ballot enters the bar as a hatched ghost while pending, fills on confirmation, the quorum marker flips to "Quorum reached" and the outcome line settles. Hero and proposal page.
   2. **Same ballots, other rules.** On a proposal, switching the comparison between voting models re-weighs the same ballots and the bar re-settles, showing how the rule changes the result.
-  3. **Power moves.** Delegating draws a line from your card to your delegate's, and their power counts up; undelegating draws it back.
+  3. **Power moves.** Adjusting a share previews the split live: lines fan out from you to each delegate, as thick as their share, with a dashed line for what you keep. Signing settles them and the delegates' power counts up; taking it back collapses the fan to the dashed line.
 - Motion: 150–250 ms ease-out for state changes (the hero loop and bar re-weighing are slower, explanatory); everything honours `prefers-reduced-motion` (final state rendered directly).
 
 ## 9. Assets
@@ -210,6 +211,7 @@ A designed `/{locale}/pricing` page exists **for internal review only**: not lin
 - Multiple spaces, space creation, and member onboarding (minting tGOV); the demo has one seeded space.
 - Editing a proposal after it is published (ballots must be cast on fixed text); authors cancel and resubmit instead.
 - Timelocks, vetoes, quadratic or ranked-choice voting, private (ZK) ballots and snapshot-block semantics (the demo weighs ballots with current delegations): not simulated.
+- Partial delegation's contracts: a standard ERC20Votes token delegates a whole balance to one address, so splits need a sub-delegation proxy per delegate (Uniswap's Franchiser pattern) or a governor counting fractional votes (Flexible Voting). The demo simulates the proxy route as one transaction; how-it-works and an info popover say so.
 - Off-chain signed votes are explained, not simulated: every demo vote is a simulated on-chain transaction.
 - Discussion threads and notifications; a vote reason is the only free text.
 - A `/brand` page, a blog, or any backend.

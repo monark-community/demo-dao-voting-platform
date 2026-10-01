@@ -41,6 +41,11 @@ export function fmtRelative(locale: Locale, at: number, now: number): string {
   return rtf.format(Math.round(diff / (30 * day)), "month")
 }
 
+/** "Amara and Julien", "Amara, Julien et Priya". */
+export function fmtList(locale: Locale, items: string[]): string {
+  return new Intl.ListFormat(intlLocale[locale], { type: "conjunction" }).format(items)
+}
+
 export function shortAddress(address: string): string {
   return address.length > 12 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address
 }
