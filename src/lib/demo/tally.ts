@@ -4,7 +4,7 @@
  * voting power per model, quorum, threshold and the outcome.
  */
 
-import type { Ballot, Member, Outcome, Proposal, VotingModel } from "./types"
+import type { Ballot, Delegation, Member, Outcome, Proposal, VotingModel } from "./types"
 
 /** Total power a quorum is measured against. */
 export function totalPower(members: Member[], model: VotingModel): number {
@@ -14,7 +14,22 @@ export function totalPower(members: Member[], model: VotingModel): number {
 
 /** Power delegated to this address by other members. */
 export function delegatedTo(members: Member[], address: string): number {
-  return members.reduce((sum, m) => (m.delegate === address ? sum + m.balance : sum), 0)
+  return members.reduce((sum, m) => sum + amountTo(m.delegations, address), 0)
+}
+
+/** What a list of splits lends to one address. */
+export function amountTo(delegations: Delegation[], address: string): number {
+  return delegations.reduce((sum, d) => (d.to === address ? sum + d.amount : sum), 0)
+}
+
+/** Total power a member lent out. */
+export function delegatedAway(member: Member): number {
+  return member.delegations.reduce((sum, d) => sum + d.amount, 0)
+}
+
+/** The member's own power they kept for themselves. */
+export function keptPower(member: Member): number {
+  return Math.max(0, member.balance - delegatedAway(member))
 }
 
 /** How much one member's ballot weighs under a model, given current delegations. */
@@ -23,12 +38,15 @@ export function votingPower(members: Member[], address: string, model: VotingMod
   if (!member) return 0
   if (model === "wallet") return 1
   if (model === "token") return member.balance
-  return (member.delegate ? 0 : member.balance) + delegatedTo(members, address)
+  return keptPower(member) + delegatedTo(members, address)
 }
 
-/** Under the delegation model, a member who delegated their power away can't vote directly. */
+/**
+ * Under the delegation model, a member who lent out all their power can't vote
+ * directly; with a partial delegation they vote with what they kept.
+ */
 export function canVoteDirectly(member: Member, model: VotingModel): boolean {
-  return model !== "delegated" || !member.delegate
+  return model !== "delegated" || keptPower(member) > 0
 }
 
 export interface Tally {

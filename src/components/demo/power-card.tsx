@@ -7,7 +7,7 @@ import { InfoTip } from "@/components/ui/info-tip"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useDemo } from "@/lib/demo/store"
-import { delegatedTo } from "@/lib/demo/tally"
+import { delegatedTo, keptPower } from "@/lib/demo/tally"
 import { fmtNumber } from "@/lib/format"
 
 import { useAppCopy } from "./app-provider"
@@ -23,7 +23,7 @@ export function PowerCard() {
   const me = demo.members.find((m) => m.address === demo.wallet.address)
   if (!me) return null
   const incoming = delegatedTo(demo.members, me.address)
-  const effective = (me.delegate ? 0 : me.balance) + incoming
+  const effective = keptPower(me) + incoming
 
   return (
     <Card className="flex flex-col gap-4">
@@ -45,12 +45,12 @@ export function PowerCard() {
           <dt className="text-muted-foreground">{p.delegatedIn}</dt>
           <dd className="font-semibold tabular-nums">{fmtNumber(locale, incoming)}</dd>
         </div>
-        {me.delegate ? (
-          <div className="flex items-center justify-between gap-3 px-3 py-2">
-            <dt className="text-muted-foreground">{t(p.delegatedOut, { name: nameOf(me.delegate) })}</dt>
-            <dd className="font-semibold tabular-nums">−{fmtNumber(locale, me.balance)}</dd>
+        {me.delegations.map((d) => (
+          <div key={d.to} className="flex items-center justify-between gap-3 px-3 py-2">
+            <dt className="text-muted-foreground">{t(p.delegatedOut, { name: nameOf(d.to) })}</dt>
+            <dd className="font-semibold tabular-nums">−{fmtNumber(locale, d.amount)}</dd>
           </div>
-        ) : null}
+        ))}
         <div className="flex items-center justify-between gap-3 px-3 py-2">
           <dt className="text-muted-foreground">{p.role}</dt>
           <dd className="-my-1 inline-flex items-center gap-1 font-bold">
