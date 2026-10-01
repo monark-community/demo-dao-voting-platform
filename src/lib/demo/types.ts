@@ -25,14 +25,25 @@ export type ProposalAction =
   | { kind: "transfer"; amount: number; token: TreasuryToken; to: string; toLabel: string }
   | { kind: "rule"; param: "quorum" | "period"; value: number }
 
+/**
+ * One slice of a member's voting power lent to a delegate. Amounts are whole
+ * tGOV rather than percentages: on-chain, partial delegation moves that many
+ * tokens into a sub-delegation proxy, so an amount is what the contract holds.
+ */
+export interface Delegation {
+  to: string
+  amount: number
+}
+
 export interface Member {
   address: string
   name: string
   /** tGOV held. */
   balance: number
   role: Role
-  /** Address this member delegated their voting power to, if any. */
-  delegate: string | null
+  /** Who this member lent voting power to, and how much. The sum never exceeds
+   *  `balance`; the rest stays with the member, who votes with it. */
+  delegations: Delegation[]
   /** Members who stand as delegates have a short pitch. */
   pitch?: string
   /** Short function in the association, e.g. "Treasurer". */
