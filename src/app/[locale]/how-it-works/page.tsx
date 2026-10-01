@@ -138,6 +138,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
             ))}
           </ul>
         </div>
+        <p className="mt-6 max-w-[68ch] text-sm text-muted-foreground">{h.delegation.onchain}</p>
       </Section>
 
       <Section id="roles" title={h.roles.title} body={h.roles.body}>

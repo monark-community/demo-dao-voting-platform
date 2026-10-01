@@ -7,7 +7,8 @@ const MAX = SAMPLE[0] ?? 1
 /**
  * Flat orange line art for a voting model: equal dots (one wallet, one vote),
  * dots sized by tGOV (token-weighted), or small dots lending power to three
- * delegates (delegation).
+ * delegates (delegation). One member splits their power between two delegates
+ * and keeps a share, so it is drawn half filled with two thinner lines.
  */
 export function ModelDots({ model, className }: { model: VotingModel; className?: string }) {
   const cols = 6
@@ -25,10 +26,16 @@ export function ModelDots({ model, className }: { model: VotingModel; className?
           const y = 26
           const hub = hubs[i % 3] ?? hubs[0]!
           const direct = i === 0 || i === 4 || i === 7
+          const split = i === 5
+          const r = 3 + (b / MAX) * 5
+          const targets = split ? [hubs[1]!, hubs[2]!] : direct ? [] : [hub]
           return (
             <g key={i}>
-              {!direct ? <path d={`M ${x} ${y} C ${x} ${y + 40}, ${hub.x} ${hub.y - 44}, ${hub.x} ${hub.y - 14}`} fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" /> : null}
-              <circle cx={x} cy={y} r={3 + (b / MAX) * 5} fill={direct ? "var(--primary)" : "var(--card)"} stroke="var(--primary)" strokeWidth="1.75" />
+              {targets.map((h, j) => (
+                <path key={j} d={`M ${x} ${y} C ${x} ${y + 40}, ${h.x} ${h.y - 44}, ${h.x} ${h.y - 14}`} fill="none" stroke="var(--primary)" strokeWidth={split ? 1 : 1.5} strokeLinecap="round" opacity="0.8" />
+              ))}
+              <circle cx={x} cy={y} r={r} fill={direct ? "var(--primary)" : "var(--card)"} stroke="var(--primary)" strokeWidth="1.75" />
+              {split ? <path d={`M ${x - r} ${y} A ${r} ${r} 0 0 0 ${x + r} ${y} Z`} fill="var(--primary)" /> : null}
             </g>
           )
         })}

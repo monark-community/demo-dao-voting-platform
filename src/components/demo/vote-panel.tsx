@@ -14,8 +14,9 @@ import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
 import { castVote } from "@/lib/demo/ops"
 import { useDemo } from "@/lib/demo/store"
-import { canVoteDirectly, tally, type ProposalStatus, votingPower } from "@/lib/demo/tally"
+import { canVoteDirectly, delegatedAway, keptPower, tally, type ProposalStatus, votingPower } from "@/lib/demo/tally"
 import type { Choice, Proposal } from "@/lib/demo/types"
+import { fmtList, fmtNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
@@ -104,7 +105,7 @@ export function VotePanel({
       <div className="flex flex-col gap-3">
         <p className="flex items-start gap-2 text-sm">
           <InfoIcon className="mt-0.5 size-4 shrink-0 text-primary-ink" aria-hidden="true" />
-          {t(v.delegatedAway, { name: nameOf(me.delegate) })}
+          {t(v.delegatedAway, { name: fmtList(locale, me.delegations.map((d) => nameOf(d.to))) })}
         </p>
         <Button asChild variant="outline" size="sm" className="self-start">
           <Link href={href(locale, "/app/delegates")}>{v.takeBack}</Link>
@@ -128,6 +129,12 @@ export function VotePanel({
         }}
       >
         <p className="text-sm text-muted-foreground">{t(v.weight, { weight: pw(weight) })}</p>
+        {me && p.model === "delegated" && me.delegations.length > 0 ? (
+          <p className="-mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+            <InfoIcon className="mt-px size-3.5 shrink-0 text-primary-ink" aria-hidden="true" />
+            {t(v.keptNote, { kept: fmtNumber(locale, keptPower(me)), lent: fmtNumber(locale, delegatedAway(me)) })}
+          </p>
+        ) : null}
         <fieldset disabled={busy}>
           <legend className="sr-only">{v.title}</legend>
           <div className="grid grid-cols-3 gap-2">
