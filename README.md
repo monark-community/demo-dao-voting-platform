@@ -1,73 +1,87 @@
-# Welcome to your Lovable project
+# GovChain by Monark
 
-## Project info
+GovChain is Monark's governance module: one place for a student association, DAO or co-op to **propose, vote and act on decisions** under rules everyone can read. Each proposal fixes its voting model (one wallet one vote, token-weighted, or token-weighted with delegation), its quorum and threshold, and the action it triggers if it passes (a treasury transfer or a rule change). Members vote with a public reason, delegate their power to someone they trust, and anyone can execute a passed proposal exactly as voted.
 
-**URL**: https://lovable.dev/projects/6b1c4315-45b7-46c4-b6f8-bcc7aaf689b2
+This repository is the **demo site**: a marketing page, a "how it works" explainer, and an interactive demo in which you join the fictional *Riverbend Blockchain Society* and vote, delegate, publish and execute proposals. Everything is simulated: no real chain, wallet, tokens or backend.
 
-## How can I edit this code?
+- Project documentation: https://www.monark.io/en/project/dao-voting-platform
+- Site plan (product brief, page map, flows, copy, design decisions): [`docs/site-plan.md`](docs/site-plan.md)
+- Asset credits: [`docs/assets.md`](docs/assets.md)
+- Screenshots of every page and flow: [`docs/screenshots/`](docs/screenshots/)
 
-There are several ways of editing your application.
+> Testnet demo · not financial advice · no real funds.
 
-**Use Lovable**
+## Run it locally
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6b1c4315-45b7-46c4-b6f8-bcc7aaf689b2) and start prompting.
+Requirements: Node.js 22 and pnpm 10.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+pnpm install
+pnpm dev            # http://localhost:3000
 ```
 
-**Edit a file directly in GitHub**
+Other scripts:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+pnpm lint           # ESLint (next/core-web-vitals + TypeScript)
+pnpm typecheck      # next typegen && tsc --noEmit
+pnpm build          # production build; every page prerenders
+pnpm start          # serve the production build
+pnpm screenshots    # Playwright screenshots into docs/screenshots (needs `pnpm start -p 3138` running)
+```
 
-**Use GitHub Codespaces**
+No environment variables are needed. `NEXT_PUBLIC_SITE_URL` optionally overrides the canonical URL (default `https://govchain.monark.io`).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## How the demo simulation works
 
-## What technologies are used for this project?
+All demo behaviour lives in a small typed data layer in `src/lib/demo/`, shaped after an OpenZeppelin-style **Governor** contract with an **ERC20Votes** token, so it could be replaced by wagmi/viem calls without touching the UI:
 
-This project is built with:
+| File | Role |
+|-|-|
+| `types.ts` | Domain types: space, members, proposals, ballots, actions, activity, wallet and transaction states. |
+| `tally.ts` | Pure governance math shared by server pages and the app: voting power per model, delegation, quorum, threshold, outcome, status. |
+| `seed.ts` | The seeded space: 20 members, a treasury, four delegates and eight proposals at every stage, with text from the dictionaries so it appears in the visitor's language. |
+| `store.ts` | A tiny external store persisted to `localStorage` (every access wrapped in try/catch), the simulated wallet prompt, and a shared clock. |
+| `chain.ts` | One transaction's lifecycle: wallet prompt (confirm or reject), pending with a hash for a realistic block time (1.2–2.4 s, or 3–6 s on "slow network"), then confirmed or reverted. |
+| `wallet.ts` | Simulated wallet connection (a sign-in message, no fee). |
+| `ops.ts` | State changes applied on confirmation: `castVote`, `setDelegate`, `createProposal`, `executeProposal`, `cancelProposal`, plus `endVotingNow` (a demo clock jump) and the simulated live voters. |
+| `permissions.ts` | Who can publish or cancel, mirroring the contract's checks so the UI can explain each lock. |
+| `examples.ts` | Worked examples for the marketing pages, computed from the seed at build time. |
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The **Demo controls** (the "Sepolia testnet" pill in the app bar) switch your role (admin, proposer, voter), turn live voters on or off, slow the network, force the next transaction to fail, and **reset the demo**.
 
-## How can I deploy this project?
+## Project structure
 
-Simply open [Lovable](https://lovable.dev/projects/6b1c4315-45b7-46c4-b6f8-bcc7aaf689b2) and click on Share -> Publish.
+```
+src/
+  app/
+    [locale]/                 en and fr routes (proxy.ts redirects / to the preferred language)
+      page.tsx                home
+      how-it-works/           mechanics explainer
+      app/                    interactive demo: proposals, proposals/[id], new, delegates, results
+      credits/                photo, type and brand credits
+      pricing/                internal review only: unlinked, noindex, not in the sitemap
+      opengraph-image.tsx     per-locale OG image
+    sitemap.ts, robots.ts, icon.svg, globals.css (Monark cream / espresso tokens)
+  components/
+    site/                     standard Monark header (brand, Demo chip), footer, locale and theme switches
+    demo/                     app screens and panels
+    diagrams/                 tally bars, voting-model dots, lifecycle strip
+    home/                     animated hero tally
+    ui/                       shadcn/ui and @monark registry components
+  i18n/                       typed EN/FR dictionaries (French must satisfy the English shape)
+  lib/demo/                   simulated chain, wallet and governance data layer
+scripts/screenshots.mjs       Playwright visual check
+scripts/wordcount.mjs         words per page (simplification pass); dictcount.mjs: words per dictionary section
+docs/                         site plan, simplification pass, assets, screenshots
+```
 
-## Can I connect a custom domain to my Lovable project?
+Stack: Next.js 16 (App Router, TypeScript strict), Tailwind CSS v4, shadcn/ui on the [Monark UI registry](https://ui.monark.io), `lucide-react`, `next-themes`, `sonner`.
 
-Yes, you can!
+## Deploying to Vercel
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Import the repository in Vercel and deploy with the framework defaults (Next.js, `pnpm install`, `pnpm build`). No `vercel.json` and no environment variables are required; the Node version is pinned in `package.json` (`engines.node: 22.x`).
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Licence and credits
+
+Open source by the Monark community. Photos are from Unsplash (free licence), credited on `/credits` and in `docs/assets.md`. The Monark logo, mesh butterfly and social icons belong to Monark and are used under its brand guidelines.
