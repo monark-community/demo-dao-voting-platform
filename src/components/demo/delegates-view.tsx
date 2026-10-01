@@ -159,16 +159,18 @@ function PowerFlow({ me, delegate, label, amount }: { me: Member; delegate?: Mem
           <Avatar address={me.address} size={48} className="ring-2 ring-primary ring-offset-2 ring-offset-card" />
           <span className="text-xs font-bold">{me.name}</span>
         </div>
-        <svg viewBox="0 0 300 60" className="h-14 min-w-0 flex-1" aria-hidden="true" preserveAspectRatio="none">
-          {delegate ? (
-            <g key={delegate.address}>
-              <path d="M 6 30 C 100 30, 200 30, 294 30" fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" className="gc-draw" style={{ ["--gc-len" as string]: 300 }} />
-              <circle cx="294" cy="30" r="5" fill="var(--primary)" className="gc-settle" />
-            </g>
-          ) : (
-            <path key="self" d="M 6 30 L 294 30" fill="none" stroke="var(--input)" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 7" className="gc-settle" />
-          )}
-        </svg>
+        <div className="relative h-14 min-w-0 flex-1" aria-hidden="true">
+          {/* The SVG stretches to fit (non-uniform scale), so the end dot is an
+              HTML element: inside the SVG it would squash into an ellipse. */}
+          <svg viewBox="0 0 300 60" className="size-full" preserveAspectRatio="none">
+            {delegate ? (
+              <path key={delegate.address} d="M 6 30 C 100 30, 200 30, 294 30" fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" className="gc-draw" style={{ ["--gc-len" as string]: 300 }} />
+            ) : (
+              <path key="self" d="M 6 30 L 294 30" fill="none" stroke="var(--input)" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 7" className="gc-settle" />
+            )}
+          </svg>
+          {delegate ? <span key={delegate.address} className="gc-settle absolute top-1/2 right-[2%] size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" /> : null}
+        </div>
         <div className="flex w-24 flex-col items-center gap-1.5 text-center">
           {delegate ? (
             <>
