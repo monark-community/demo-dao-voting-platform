@@ -9,8 +9,13 @@ import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
 import { InfoTip } from "@/components/ui/info-tip"
 import { Input } from "@/components/ui/input"
+import { FieldError } from "@/components/ui/field-error"
 import { Label } from "@/components/ui/label"
+import { NativeSelect } from "@/components/ui/native-select"
+import { RadioGroup, RadioGroupItem, RadioGroupItemTitle } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
@@ -24,8 +29,7 @@ import { fmtNumber, fmtPct } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Card } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Card, useTxLabels } from "./bits"
 
 type ActionKind = ProposalAction["kind"]
 
@@ -136,6 +140,7 @@ export function Composer() {
   const c = app.composer
   const f = c.fields
   const tx = useTx()
+  const txLabels = useTxLabels()
   const blank = (): Form => ({
     title: "",
     summary: "",
@@ -324,13 +329,13 @@ export function Composer() {
                 <Input id="summary" value={form.summary} maxLength={140} onChange={(e) => set("summary", e.target.value)} aria-invalid={!!errors.summary} />
               </Field>
               <Field id="category" label={f.category}>
-                <select id="category" value={form.category} onChange={(e) => set("category", e.target.value as Category)} className={selectCls}>
+                <NativeSelect id="category" value={form.category} onChange={(e) => set("category", e.target.value as Category)} className="w-full">
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
                       {terms.categories[cat]}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </Field>
               <Field id="body" label={f.body} error={errors.body}>
                 <Textarea id="body" rows={6} placeholder={f.bodyHint} value={form.body} onChange={(e) => set("body", e.target.value)} aria-invalid={!!errors.body} />
@@ -356,7 +361,13 @@ export function Composer() {
                   </ul>
                 </InfoTip>
               </div>
-              <div role="radiogroup" aria-labelledby="action-legend" className="grid gap-2 sm:grid-cols-3">
+              <RadioGroup
+                variant="card"
+                aria-labelledby="action-legend"
+                value={form.action}
+                onValueChange={(v) => set("action", v as ActionKind)}
+                className="sm:grid-cols-3"
+              >
                 {(
                   [
                     ["none", f.actionNone, MegaphoneIcon],
@@ -364,21 +375,14 @@ export function Composer() {
                     ["rule", f.actionRule, SlidersHorizontalIcon],
                   ] as const
                 ).map(([kind, label, Icon]) => (
-                  <label
-                    key={kind}
-                    className={cn(
-                      "flex cursor-pointer flex-col gap-1 rounded-2xl border p-3.5 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                      form.action === kind ? "border-primary bg-primary/10" : "border-input hover:bg-muted"
-                    )}
-                  >
-                    <input type="radio" name="action" value={kind} checked={form.action === kind} onChange={() => set("action", kind)} className="sr-only" />
-                    <span className="flex items-center gap-2 text-sm font-bold">
+                  <RadioGroupItem key={kind} value={kind}>
+                    <RadioGroupItemTitle className="flex items-center gap-2">
                       <Icon className="size-4 text-primary-ink" aria-hidden="true" />
                       {label}
-                    </span>
-                  </label>
+                    </RadioGroupItemTitle>
+                  </RadioGroupItem>
                 ))}
-              </div>
+              </RadioGroup>
 
               {form.action === "transfer" ? (
                 <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
@@ -386,10 +390,10 @@ export function Composer() {
                     <Input id="amount" inputMode="numeric" value={form.amount} onChange={(e) => set("amount", e.target.value)} aria-invalid={!!errors.amount} />
                   </Field>
                   <Field id="token" label={f.token}>
-                    <select id="token" value={form.token} onChange={(e) => set("token", e.target.value as TreasuryToken)} className={selectCls}>
+                    <NativeSelect id="token" value={form.token} onChange={(e) => set("token", e.target.value as TreasuryToken)} className="w-full">
                       <option value="tUSDC">tUSDC</option>
                       <option value="tETH">tETH</option>
-                    </select>
+                    </NativeSelect>
                   </Field>
                   <Field id="toLabel" label={f.recipientLabel} error={errors.toLabel} className="sm:col-span-2">
                     <Input id="toLabel" value={form.toLabel} maxLength={60} onChange={(e) => set("toLabel", e.target.value)} aria-invalid={!!errors.toLabel} />
@@ -412,10 +416,10 @@ export function Composer() {
               {form.action === "rule" ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field id="ruleParam" label={f.ruleParam}>
-                    <select id="ruleParam" value={form.ruleParam} onChange={(e) => set("ruleParam", e.target.value as "quorum" | "period")} className={selectCls}>
+                    <NativeSelect id="ruleParam" value={form.ruleParam} onChange={(e) => set("ruleParam", e.target.value as "quorum" | "period")} className="w-full">
                       <option value="quorum">{f.ruleQuorum}</option>
                       <option value="period">{f.rulePeriod}</option>
-                    </select>
+                    </NativeSelect>
                   </Field>
                   <Field id="ruleValue" label={f.ruleValue} error={errors.ruleValue}>
                     <Input id="ruleValue" inputMode="numeric" value={form.ruleValue} onChange={(e) => set("ruleValue", e.target.value)} aria-invalid={!!errors.ruleValue} />
@@ -432,45 +436,44 @@ export function Composer() {
                 <span className="text-sm font-bold" id="model-label">
                   {f.model}
                 </span>
-                <div role="radiogroup" aria-labelledby="model-label" className="flex flex-wrap gap-2">
+                <ToggleGroup
+                  type="single"
+                  variant="chip"
+                  aria-labelledby="model-label"
+                  value={form.model}
+                  onValueChange={(v) => v && set("model", v as VotingModel)}
+                >
                   {MODELS.map((m) => (
-                    <label
-                      key={m}
-                      className={cn(
-                        "inline-flex h-10 cursor-pointer items-center rounded-full border px-4 text-sm font-bold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                        form.model === m ? "border-foreground bg-foreground text-background" : "border-input hover:bg-muted"
-                      )}
-                    >
-                      <input type="radio" name="model" value={m} checked={form.model === m} onChange={() => set("model", m)} className="sr-only" />
+                    <ToggleGroupItem key={m} value={m}>
                       {terms.modelsShort[m]}
-                    </label>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field id="period" label={f.period}>
-                  <select id="period" value={form.periodDays} onChange={(e) => set("periodDays", Number(e.target.value))} className={selectCls}>
+                  <NativeSelect id="period" value={form.periodDays} onChange={(e) => set("periodDays", Number(e.target.value))} className="w-full">
                     {PERIODS.map((d) => (
                       <option key={d} value={d}>
                         {t(f.periodValue, { n: d })}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </Field>
                 <Field id="quorum" label={f.quorum}>
-                  <select id="quorum" value={form.quorumPct} onChange={(e) => set("quorumPct", Number(e.target.value))} className={selectCls}>
+                  <NativeSelect id="quorum" value={form.quorumPct} onChange={(e) => set("quorumPct", Number(e.target.value))} className="w-full">
                     {QUORUMS.map((q) => (
                       <option key={q} value={q}>
                         {fmtPct(locale, q / 100, 0)}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </Field>
                 <Field id="threshold" label={f.threshold} className="sm:col-span-2">
-                  <select id="threshold" value={form.thresholdPct} onChange={(e) => set("thresholdPct", Number(e.target.value))} className={selectCls}>
+                  <NativeSelect id="threshold" value={form.thresholdPct} onChange={(e) => set("thresholdPct", Number(e.target.value))} className="w-full">
                     <option value={50}>{f.thresholdSimple}</option>
                     <option value={66}>{f.thresholdSuper}</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
               </div>
             </Card>
@@ -503,16 +506,13 @@ export function Composer() {
               {tx.busy ? c.pending : c.submit}
             </Button>
             <p className="text-xs text-muted-foreground">{c.final}</p>
-            <TxFeedback state={tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} />
+            <TxFeedback {...txLabels} {...tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} />
           </div>
         </aside>
       </div>
     </div>
   )
 }
-
-const selectCls =
-  "h-10 w-full rounded-md border border-input bg-card px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
 
 function Field({
   id,
@@ -531,12 +531,10 @@ function Field({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
-      <Label htmlFor={id} className="text-sm font-bold">
-        {label}
-      </Label>
+      <Label htmlFor={id}>{label}</Label>
       {children}
       {error ? (
-        <p className="text-xs font-semibold text-destructive">{error}</p>
+        <FieldError id={`${id}-error`}>{error}</FieldError>
       ) : hint ? (
         <p className="text-xs text-muted-foreground">{hint}</p>
       ) : null}

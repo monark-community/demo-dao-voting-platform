@@ -21,6 +21,22 @@ export function useNameOf(demo: DemoState | null) {
   }
 }
 
+/** The app's translated strings for @monark/ui TxFeedback; spread the hook's TxState after it. */
+export function useTxLabels() {
+  const { app } = useAppCopy()
+  const tx = app.tx
+  return {
+    signingLabel: tx.signing,
+    pendingLabel: tx.pending,
+    pendingStatusLabel: tx.pending,
+    confirmedLabel: tx.confirmed,
+    failedLabel: tx.failed,
+    reasons: { rejected: tx.rejected, reverted: tx.reverted },
+    retryLabel: tx.retry,
+    dismissLabel: tx.dismiss,
+  }
+}
+
 export function Avatar({ address, size = 28, className }: { address: string; size?: number; className?: string }) {
   return (
     <span aria-hidden="true" className={cn("inline-flex shrink-0 overflow-hidden rounded-full", className)} style={{ width: size, height: size }}>

@@ -6,7 +6,9 @@ import { useMemo, useState } from "react"
 
 import { fmtPower, liveOutcome, OutcomeChip, TallyView } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { TokenAmount } from "@/components/ui/token-amount"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -82,7 +84,7 @@ export function ProposalsView() {
                 {l.title}
               </h2>
               {/* On phones "New proposal" lives here, so the app bar's three sections fit. */}
-              <Button asChild size="sm" className="h-10 sm:hidden">
+              <Button asChild className="sm:hidden">
                 <Link href={href(locale, "/app/new")}>
                   <PlusIcon aria-hidden="true" />
                   {app.nav.newProposal}
@@ -115,37 +117,37 @@ export function ProposalsView() {
             </div>
           </div>
 
-          <div role="group" aria-label={l.title} className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
+          <ToggleGroup
+            type="single"
+            variant="chip"
+            value={tab}
+            onValueChange={(v) => v && setTab(v as typeof tab)}
+            aria-label={l.title}
+            className="-mx-1 max-w-[calc(100%+0.5rem)] flex-nowrap overflow-x-auto px-1 pb-1"
+          >
             {(["active", "passed", "closed", "all"] as const).map((key) => (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={tab === key}
-                onClick={() => setTab(key)}
-                className={cn(
-                  "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition-colors duration-150",
-                  tab === key ? "border-foreground bg-foreground text-background" : "border-input text-foreground hover:bg-muted"
-                )}
-              >
+              <ToggleGroupItem key={key} value={key}>
                 {l.tabs[key]}
-                <span className={cn("rounded-full px-1.5 text-xs tabular-nums", tab === key ? "bg-background/20" : "bg-muted")}>{counts[key]}</span>
-              </button>
+                <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums">{counts[key]}</span>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
 
           {visible.length === 0 ? (
-            <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-              <p>{q ? t(l.noMatch, { query }) : l.empty}</p>
-              {q ? (
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setQuery("")}>
-                  {l.clear}
-                </Button>
-              ) : (
-                <Button asChild size="sm" className="mt-4">
-                  <Link href={href(locale, "/app/new")}>{app.nav.newProposal}</Link>
-                </Button>
-              )}
-            </div>
+            <Empty role="status">
+              <EmptyDescription>{q ? t(l.noMatch, { query }) : l.empty}</EmptyDescription>
+              <EmptyContent>
+                {q ? (
+                  <Button variant="outline" size="sm" onClick={() => setQuery("")}>
+                    {l.clear}
+                  </Button>
+                ) : (
+                  <Button asChild size="sm">
+                    <Link href={href(locale, "/app/new")}>{app.nav.newProposal}</Link>
+                  </Button>
+                )}
+              </EmptyContent>
+            </Empty>
           ) : (
             <ul className="flex flex-col gap-3">
               {visible.map(({ p }) => (

@@ -6,8 +6,10 @@ import { useId, useState, type ReactNode } from "react"
 
 import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
+import { FieldError } from "@/components/ui/field-error"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -20,8 +22,7 @@ import { fmtList, fmtNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Card, ChoicePill, useNameOf } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Card, ChoicePill, useNameOf, useTxLabels } from "./bits"
 
 const MAX_REASON = 280
 const CHOICES: Choice[] = ["for", "against", "abstain"]
@@ -41,6 +42,7 @@ export function VotePanel({
   const v = app.vote
   const nameOf = useNameOf(demo)
   const tx = useTx()
+  const txLabels = useTxLabels()
   const [choice, setChoice] = useState<Choice | null>(null)
   const [reason, setReason] = useState("")
   const [missing, setMissing] = useState(false)
@@ -168,15 +170,9 @@ export function VotePanel({
             })}
           </div>
         </fieldset>
-        {missing ? (
-          <p role="alert" className="text-sm text-destructive">
-            {v.choose}
-          </p>
-        ) : null}
+        {missing ? <FieldError>{v.choose}</FieldError> : null}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={reasonId} className="text-sm font-bold">
-            {v.reason}
-          </Label>
+          <Label htmlFor={reasonId}>{v.reason}</Label>
           <Textarea
             id={reasonId}
             value={reason}
@@ -199,7 +195,7 @@ export function VotePanel({
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? v.pending : v.cast}
         </Button>
-        <TxFeedback state={tx.state} pendingLabel={v.pending} onRetry={choice ? () => void submit(choice) : undefined} onDismiss={tx.reset} />
+        <TxFeedback {...txLabels} {...tx.state} pendingLabel={v.pending} onRetry={choice ? () => void submit(choice) : undefined} onDismiss={tx.reset} />
       </form>
     )
   }
