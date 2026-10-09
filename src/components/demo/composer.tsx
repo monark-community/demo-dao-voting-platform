@@ -11,6 +11,7 @@ import { InfoTip } from "@/components/ui/info-tip"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
@@ -24,8 +25,7 @@ import { fmtNumber, fmtPct } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Card } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Card, useTxLabels } from "./bits"
 
 type ActionKind = ProposalAction["kind"]
 
@@ -136,6 +136,7 @@ export function Composer() {
   const c = app.composer
   const f = c.fields
   const tx = useTx()
+  const txLabels = useTxLabels()
   const blank = (): Form => ({
     title: "",
     summary: "",
@@ -503,7 +504,7 @@ export function Composer() {
               {tx.busy ? c.pending : c.submit}
             </Button>
             <p className="text-xs text-muted-foreground">{c.final}</p>
-            <TxFeedback state={tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} />
+            <TxFeedback {...txLabels} {...tx.state} pendingLabel={c.pending} onRetry={submit} onDismiss={tx.reset} />
           </div>
         </aside>
       </div>

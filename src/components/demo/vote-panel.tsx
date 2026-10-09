@@ -8,6 +8,7 @@ import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -20,8 +21,7 @@ import { fmtList, fmtNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Card, ChoicePill, useNameOf } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Card, ChoicePill, useNameOf, useTxLabels } from "./bits"
 
 const MAX_REASON = 280
 const CHOICES: Choice[] = ["for", "against", "abstain"]
@@ -41,6 +41,7 @@ export function VotePanel({
   const v = app.vote
   const nameOf = useNameOf(demo)
   const tx = useTx()
+  const txLabels = useTxLabels()
   const [choice, setChoice] = useState<Choice | null>(null)
   const [reason, setReason] = useState("")
   const [missing, setMissing] = useState(false)
@@ -199,7 +200,7 @@ export function VotePanel({
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? v.pending : v.cast}
         </Button>
-        <TxFeedback state={tx.state} pendingLabel={v.pending} onRetry={choice ? () => void submit(choice) : undefined} onDismiss={tx.reset} />
+        <TxFeedback {...txLabels} {...tx.state} pendingLabel={v.pending} onRetry={choice ? () => void submit(choice) : undefined} onDismiss={tx.reset} />
       </form>
     )
   }

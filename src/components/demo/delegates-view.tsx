@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { InfoTip } from "@/components/ui/info-tip"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { t } from "@/i18n/t"
 import { useTx } from "@/lib/demo/chain"
 import { DELEGATE_KEYS, addressOf } from "@/lib/demo/seed"
@@ -16,8 +17,7 @@ import { fmtNumber, fmtPctNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Avatar, Card } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Avatar, Card, useTxLabels } from "./bits"
 
 /** A number that counts to its new value (ease-out, ~600 ms); instant with reduced motion. */
 function CountUp({ value, format }: { value: number; format: (n: number) => string }) {
@@ -61,6 +61,7 @@ export function DelegatesView() {
   const { app, locale } = useAppCopy()
   const d = app.delegates
   const tx = useTx()
+  const txLabels = useTxLabels()
   // Unsigned edits to the split; null while it matches what's on-chain.
   const [draft, setDraft] = useState<Shares | null>(null)
   const [last, setLast] = useState<Delegation[]>([])
@@ -158,7 +159,7 @@ export function DelegatesView() {
             </Button>
           ) : null}
         </div>
-        <TxFeedback state={tx.state} pendingLabel={d.pending} confirmedLabel={last.length > 0 ? d.done : d.doneBack} onRetry={() => run(last)} onDismiss={tx.reset} />
+        <TxFeedback {...txLabels} {...tx.state} pendingLabel={d.pending} confirmedLabel={last.length > 0 ? d.done : d.doneBack} onRetry={() => run(last)} onDismiss={tx.reset} />
       </Card>
 
       <ul className="grid gap-4 md:grid-cols-2">

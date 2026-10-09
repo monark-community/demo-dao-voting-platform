@@ -16,6 +16,7 @@ import { useState } from "react"
 import { fmtPower, liveOutcome, OutcomeChip, TallyView } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
 import { InfoTip } from "@/components/ui/info-tip"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -29,8 +30,7 @@ import { fmtDate, fmtNumber, fmtPctNumber, fmtRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Avatar, Card, ChoicePill, StatusBadge, useNameOf } from "./bits"
-import { TxFeedback } from "./tx-feedback"
+import { Avatar, Card, ChoicePill, StatusBadge, useNameOf, useTxLabels } from "./bits"
 import { VotePanel } from "./vote-panel"
 
 export function actionText(p: Proposal, copy: ReturnType<typeof useAppCopy>): string {
@@ -361,6 +361,7 @@ function ExecutePanel({ p, demo, status }: { p: Proposal; demo: DemoState; statu
   const { app, locale } = copy
   const e = app.proposal.execute
   const tx = useTx()
+  const txLabels = useTxLabels()
   if (status !== "passed" && !(status === "executed" && tx.state.phase === "confirmed")) return null
   if (p.action.kind === "none") {
     return (
@@ -401,7 +402,7 @@ function ExecutePanel({ p, demo, status }: { p: Proposal; demo: DemoState; statu
           {tx.busy ? e.pending : e.cta}
         </Button>
       ) : null}
-      <TxFeedback className="mt-4" state={tx.state} confirmedLabel={e.done} onRetry={run} onDismiss={tx.reset} />
+      <TxFeedback {...txLabels} {...tx.state} className="mt-4" confirmedLabel={e.done} onRetry={run} onDismiss={tx.reset} />
     </Card>
   )
 }
@@ -410,6 +411,7 @@ function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
   const { app } = useAppCopy()
   const m = app.proposal.manage
   const tx = useTx()
+  const txLabels = useTxLabels()
   const [confirming, setConfirming] = useState(false)
   const me = demo.members.find((x) => x.address === demo.wallet.address)
   const allowed = canCancel(me, p)
@@ -457,7 +459,7 @@ function ManagePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
       ) : (
         <p className="text-xs text-muted-foreground">{m.cancelNotAllowed}</p>
       )}
-      <TxFeedback state={tx.state} onRetry={cancel} onDismiss={tx.reset} />
+      <TxFeedback {...txLabels} {...tx.state} onRetry={cancel} onDismiss={tx.reset} />
     </Card>
   )
 }
