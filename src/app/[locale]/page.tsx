@@ -7,7 +7,7 @@ import { notFound } from "next/navigation"
 import { Lifecycle } from "@/components/diagrams/lifecycle"
 import { ModelDots } from "@/components/diagrams/model-dots"
 import { HeroTally } from "@/components/home/hero-tally"
-import { SectionDivider } from "@/components/site/section-divider"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { Button } from "@/components/ui/button"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
@@ -130,7 +130,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      <SectionDivider />
+      <SectionDivider contained />
 
       {/* Lifecycle */}
       <section aria-labelledby="life-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">

@@ -7,7 +7,7 @@ import { notFound } from "next/navigation"
 import { Lifecycle } from "@/components/diagrams/lifecycle"
 import { ModelDots } from "@/components/diagrams/model-dots"
 import { TallyView } from "@/components/diagrams/tally-view"
-import { SectionDivider } from "@/components/site/section-divider"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { Button } from "@/components/ui/button"
 import { href, isLocale, REPO_URL } from "@/i18n/config"
 import { getDictionary, t } from "@/i18n"
@@ -124,7 +124,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         <p className="mt-6 max-w-[68ch]">{h.models.takeaway}</p>
       </Section>
 
-      <SectionDivider className="my-4" />
+      <SectionDivider contained className="my-4" />
 
       <Section id="delegation" title={h.delegation.title} body={h.delegation.body}>
         <div className="mt-8 grid items-center gap-8 md:grid-cols-[1fr_1.1fr]">

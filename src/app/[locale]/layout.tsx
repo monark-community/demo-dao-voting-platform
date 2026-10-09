@@ -5,8 +5,8 @@ import { notFound } from "next/navigation"
 import "../globals.css"
 
 import { SiteFooter } from "@/components/site/footer"
-import { SiteHeader } from "@/components/site/header"
-import { ThemeProvider } from "@/components/site/theme"
+import { SiteHeader, type HeaderLabels } from "@/components/site/header"
+import { ThemeProvider } from "@/components/ui/theme-toggle"
 import { isLocale, locales, SITE_URL } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
 
@@ -55,6 +55,28 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const dict = getDictionary(locale)
+  const c = dict.common
+  const header: HeaderLabels = {
+    product: c.product,
+    homeLabel: c.homeLabel,
+    nav: { label: c.nav.label, overview: c.nav.overview, how: c.nav.how, demo: c.nav.demo },
+    openMenu: c.menu,
+    closeMenu: c.closeMenu,
+    menu: c.menuTitle,
+    demoChip: c.demoChip,
+    demoBadge: c.demoBadge,
+    language: { label: c.language.label, names: { en: c.language.en, fr: c.language.fr }, short: c.language.short },
+    theme: c.theme.toggle,
+    launchDemo: c.launchDemo,
+    wallet: {
+      connect: dict.app.wallet.connect,
+      connecting: dict.app.wallet.connecting,
+      disconnect: dict.app.wallet.disconnect,
+      signIn: dict.app.summaries.signIn,
+      signInRow: dict.app.summaries.signInRow,
+      signInValue: dict.app.summaries.signInValue,
+    },
+  }
 
   return (
     <html lang={locale} className={nunito.variable} suppressHydrationWarning>
@@ -66,7 +88,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           >
             {dict.common.skip}
           </a>
-          <SiteHeader locale={locale} dict={dict} />
+          <SiteHeader locale={locale} t={header} />
           <main id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
             {children}
           </main>
