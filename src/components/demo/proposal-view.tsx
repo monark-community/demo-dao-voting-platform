@@ -16,6 +16,7 @@ import { useState } from "react"
 import { fmtPower, liveOutcome, OutcomeChip, TallyView } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
 import { InfoTip } from "@/components/ui/info-tip"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { TxFeedback } from "@/components/ui/tx-feedback"
 import { TxStatus } from "@/components/ui/tx-status"
 import { href } from "@/i18n/config"
@@ -257,20 +258,13 @@ function ComparePanel({ p, demo }: { p: Proposal; demo: DemoState }) {
         <span className="inline-flex h-10 items-center rounded-full border border-dashed px-4 text-sm font-semibold text-muted-foreground">
           {c.official}: {terms.modelsShort[p.model]}
         </span>
-        {others.map((m) => (
-          <button
-            key={m}
-            type="button"
-            aria-pressed={model === m}
-            onClick={() => setModel(m)}
-            className={cn(
-              "inline-flex h-10 items-center rounded-full border px-4 text-sm font-bold transition-colors duration-150",
-              model === m ? "border-foreground bg-foreground text-background" : "border-input hover:bg-muted"
-            )}
-          >
-            {terms.modelsShort[m]}
-          </button>
-        ))}
+        <ToggleGroup type="single" variant="chip" value={model} onValueChange={(v) => v && setModel(v as VotingModel)}>
+          {others.map((m) => (
+            <ToggleGroupItem key={m} value={m}>
+              {terms.modelsShort[m]}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
       <TallyView className="mt-5" tally={alt} model={model} locale={locale} labels={{ ...terms, tally: app.proposal.tally }} compact />
       <p key={`${model}-${altOutcome}`} className="gc-settle mt-4 text-sm" aria-live="polite">

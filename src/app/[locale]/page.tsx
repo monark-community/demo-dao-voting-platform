@@ -7,8 +7,10 @@ import { notFound } from "next/navigation"
 import { Lifecycle } from "@/components/diagrams/lifecycle"
 import { ModelDots } from "@/components/diagrams/model-dots"
 import { HeroTally } from "@/components/home/hero-tally"
-import { SectionDivider } from "@/components/ui/section-divider"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionHeading } from "@/components/ui/section-heading"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
 import { sameBallotsExample } from "@/lib/demo/examples"
@@ -51,13 +53,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <h1 className="text-[2.25rem] leading-[1.05] font-extrabold tracking-display sm:text-5xl lg:text-[4.25rem]">{h.title}</h1>
             <p className="mt-6 max-w-[34rem] text-lg text-muted-foreground sm:text-xl">{h.sub}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-12 px-6 text-base">
+              <Button asChild size="lg">
                 <Link href={href(locale, "/app")}>
                   {h.ctaPrimary}
                   <ArrowRightIcon aria-hidden="true" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 px-6 text-base">
+              <Button asChild size="lg" variant="outline">
                 <Link href={href(locale, "/how-it-works")}>{h.ctaSecondary}</Link>
               </Button>
             </div>
@@ -68,9 +70,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* Voting models */}
       <section aria-labelledby="models-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <h2 id="models-title" className="text-3xl font-bold tracking-display sm:text-4xl">
-          {h.models.title}
-        </h2>
+        <SectionHeading titleId="models-title" title={h.models.title} />
         <ul className="mt-10 grid gap-4 md:grid-cols-3">
           {h.models.items.map((m) => (
             <li key={m.key} className="flex flex-col rounded-3xl border bg-card p-6">
@@ -134,24 +134,23 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* Lifecycle */}
       <section aria-labelledby="life-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <h2 id="life-title" className="text-3xl font-bold tracking-display sm:text-4xl">
-            {h.lifecycle.title}
-          </h2>
-          <Link href={href(locale, "/how-it-works")} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-primary-ink underline underline-offset-4">
-            {h.lifecycle.more}
-            <ArrowRightIcon className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
+        <SectionHeading
+          titleId="life-title"
+          title={h.lifecycle.title}
+          action={
+            <Link href={href(locale, "/how-it-works")} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-primary-ink underline underline-offset-4">
+              {h.lifecycle.more}
+              <ArrowRightIcon className="size-4" aria-hidden="true" />
+            </Link>
+          }
+        />
         <Lifecycle steps={h.lifecycle.steps} className="mt-10" />
       </section>
 
       {/* Who */}
       <section aria-labelledby="who-title" className="border-y bg-card">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-          <h2 id="who-title" className="text-3xl font-bold tracking-display sm:text-4xl">
-            {h.who.title}
-          </h2>
+          <SectionHeading titleId="who-title" title={h.who.title} />
           <ul className="mt-10 grid gap-6 md:grid-cols-3">
             {h.who.items.map((item, i) => {
               const photo = PHOTOS[i]
@@ -175,28 +174,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* FAQ */}
       <section aria-labelledby="faq-title" className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
-        <h2 id="faq-title" className="text-3xl font-bold tracking-display sm:text-4xl">
-          {h.faq.title}
-        </h2>
-        <div className="mt-8 divide-y border-y">
+        <SectionHeading titleId="faq-title" title={h.faq.title} />
+        <Accordion type="multiple" variant="plus" className="mt-8 border-y">
           {h.faq.items.map((item) => (
-            <details key={item.q} className="group py-1">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-3 font-bold [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-transform duration-200 group-open:rotate-45">
-                  +
-                </span>
-              </summary>
-              <p className="max-w-[68ch] pb-5 text-muted-foreground">{item.a}</p>
-            </details>
+            <AccordionItem key={item.q} value={item.q}>
+              <AccordionTrigger>{item.q}</AccordionTrigger>
+              <AccordionContent>{item.a}</AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </section>
 
       {/* Closing */}
       <section className="mx-auto w-full max-w-6xl px-4 py-16 text-center sm:px-6 lg:py-24">
         <h2 className="mx-auto max-w-[22ch] text-3xl font-extrabold tracking-display sm:text-5xl">{h.closing.title}</h2>
-        <Button asChild size="lg" className="mt-8 h-12 px-6 text-base">
+        <Button asChild size="lg" className="mt-8">
           <Link href={href(locale, "/app")}>
             {h.closing.cta}
             <ArrowRightIcon aria-hidden="true" />

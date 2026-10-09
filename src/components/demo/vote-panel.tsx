@@ -6,6 +6,7 @@ import { useId, useState, type ReactNode } from "react"
 
 import { fmtPower } from "@/components/diagrams/tally-view"
 import { Button } from "@/components/ui/button"
+import { FieldError } from "@/components/ui/field-error"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { TxFeedback } from "@/components/ui/tx-feedback"
@@ -169,15 +170,9 @@ export function VotePanel({
             })}
           </div>
         </fieldset>
-        {missing ? (
-          <p role="alert" className="text-sm text-destructive">
-            {v.choose}
-          </p>
-        ) : null}
+        {missing ? <FieldError>{v.choose}</FieldError> : null}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={reasonId} className="text-sm font-bold">
-            {v.reason}
-          </Label>
+          <Label htmlFor={reasonId}>{v.reason}</Label>
           <Textarea
             id={reasonId}
             value={reason}

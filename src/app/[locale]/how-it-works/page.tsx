@@ -1,4 +1,4 @@
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon, FileSignatureIcon, LinkIcon, MinusIcon } from "lucide-react"
+import { ArrowRightIcon, CheckIcon, FileSignatureIcon, LinkIcon, MinusIcon } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 import type { ReactNode } from "react"
@@ -7,8 +7,10 @@ import { notFound } from "next/navigation"
 import { Lifecycle } from "@/components/diagrams/lifecycle"
 import { ModelDots } from "@/components/diagrams/model-dots"
 import { TallyView } from "@/components/diagrams/tally-view"
-import { SectionDivider } from "@/components/ui/section-divider"
 import { Button } from "@/components/ui/button"
+import { Disclosure } from "@/components/ui/disclosure"
+import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionHeading } from "@/components/ui/section-heading"
 import { href, isLocale, REPO_URL } from "@/i18n/config"
 import { getDictionary, t } from "@/i18n"
 import { sameBallotsExample } from "@/lib/demo/examples"
@@ -196,12 +198,8 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
       </Section>
 
       <Section id="developers" title={h.dev.title} body={h.dev.body}>
-        <details className="group mt-6 overflow-hidden rounded-3xl border bg-card">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 text-sm font-bold [&::-webkit-details-marker]:hidden">
-            {h.dev.show}
-            <ChevronDownIcon className="size-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-          </summary>
-          <figure className="border-t">
+        <Disclosure summary={h.dev.show} className="mt-6" contentClassName="p-0">
+          <figure>
             <figcaption className="border-b px-5 py-3 text-xs font-semibold text-muted-foreground">{h.dev.codeLabel}</figcaption>
             <ul className="divide-y">
               {h.dev.mapping.map((m) => (
@@ -212,7 +210,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
               ))}
             </ul>
           </figure>
-        </details>
+        </Disclosure>
         <a href={REPO_URL} className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-primary-ink underline underline-offset-4">
           {h.dev.repo}
           <ArrowRightIcon className="size-4" aria-hidden="true" />
@@ -222,7 +220,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
       <section className="border-t bg-card">
         <div className="mx-auto flex max-w-4xl flex-col items-start gap-4 px-4 py-14 sm:px-6">
           <h2 className="text-3xl font-extrabold tracking-display">{h.closing.title}</h2>
-          <Button asChild size="lg" className="h-12 px-6 text-base">
+          <Button asChild size="lg">
             <Link href={href(locale, "/app")}>
               {h.closing.cta}
               <ArrowRightIcon aria-hidden="true" />
@@ -237,10 +235,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
 function Section({ id, title, body, children }: { id: string; title: string; body?: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:py-12">
-      <h2 id={`${id}-title`} className="text-2xl font-bold tracking-display sm:text-3xl">
-        {title}
-      </h2>
-      {body ? <p className="mt-3 max-w-[68ch] text-muted-foreground">{body}</p> : null}
+      <SectionHeading size="sm" titleId={`${id}-title`} title={title} lead={body} />
       {children}
     </section>
   )
