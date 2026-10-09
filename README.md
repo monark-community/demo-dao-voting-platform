@@ -13,7 +13,7 @@ This repository is the **demo site**: a marketing page, a "how it works" explain
 
 ## Run it locally
 
-Requirements: Node.js 22 and pnpm 10.
+Requirements: Node.js 24 and pnpm 10.
 
 ```bash
 pnpm install
@@ -80,7 +80,7 @@ Stack: Next.js 16 (App Router, TypeScript strict), Tailwind CSS v4, shadcn/ui on
 
 ## Deploying to Vercel
 
-Import the repository in Vercel and deploy with the framework defaults (Next.js, `pnpm install`, `pnpm build`). No `vercel.json` and no environment variables are required; the Node version is pinned in `package.json` (`engines.node: 22.x`).
+Import the repository in Vercel and deploy with the framework defaults (Next.js, `pnpm install`, `pnpm build`). No `vercel.json` and no environment variables are required; the Node version is pinned in `package.json` (`engines.node: 24.x`).
 
 ## Licence and credits
 
